@@ -1,0 +1,159 @@
+/* Import Tailwind v4 */
+@use "tailwindcss";
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* Base styles */
+:root {
+  --color-primary: #3b82f6;
+  --color-primary-dark: #1d4ed8;
+  --color-accent: #06b6d4;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-surface: #0f172a;
+  --color-card: #1e293b;
+  --color-border: #334155;
+  --color-text: #f8fafc;
+  --color-text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'DM Sans', sans-serif;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Sora', sans-serif;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #1e293b; }
+::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+/* =========================
+   COMPONENTS (Tailwind v4 safe)
+========================= */
+
+@layer components {
+
+  .card {
+    @apply bg-slate-800 border border-slate-700 rounded-2xl;
+  }
+
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-medium px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95;
+  }
+
+  .input-field {
+    @apply w-full bg-slate-900 border border-slate-600 text-slate-100 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-slate-500 transition-all duration-200;
+  }
+
+  /* ❌ FIX IMPORTANTE: ya NO usamos @apply badge dentro de otros */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply bg-emerald-900/50 text-emerald-400 border border-emerald-800;
+  }
+
+  .badge-warning {
+    @apply bg-amber-900/50 text-amber-400 border border-amber-800;
+  }
+
+  .badge-danger {
+    @apply bg-red-900/50 text-red-400 border border-red-800;
+  }
+
+  .badge-info {
+    @apply bg-blue-900/50 text-blue-400 border border-blue-800;
+  }
+
+  .badge-neutral {
+    @apply bg-slate-700 text-slate-300 border border-slate-600;
+  }
+}
+
+/* =========================
+   Animations
+========================= */
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================
+   Sidebar (SCSS fixed)
+========================= */
+
+.sidebar-link {
+  @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-700 transition-all duration-200 cursor-pointer text-sm font-medium;
+}
+
+.sidebar-link.active {
+  @apply bg-blue-600/20 text-blue-400 border border-blue-600/30;
+}
+
+/* =========================
+   Table
+========================= */
+
+.table-nexus {
+  @apply w-full text-sm;
+}
+
+.table-nexus thead tr {
+  @apply border-b border-slate-700;
+}
+
+.table-nexus thead th {
+  @apply text-left py-3 px-4 text-slate-400 font-medium text-xs uppercase tracking-wider;
+}
+
+.table-nexus tbody tr {
+  @apply border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors duration-150;
+}
+
+.table-nexus tbody td {
+  @apply py-3.5 px-4 text-slate-300;
+}
+
+/* =========================
+   Captcha box
+========================= */
+
+.captcha-box {
+  @apply flex items-center gap-3 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3;
+}
