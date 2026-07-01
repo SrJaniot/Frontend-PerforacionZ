@@ -1,20 +1,36 @@
-<app-loading *ngIf="cargando"></app-loading>
-
-
-
+<!-- Loading inicial -->
+<app-loading
+  [fullscreen]="true"
+  *ngIf="cargando">
+</app-loading>
 
 <div *ngIf="sesionActiva" class="layout-wrapper bg-slate-950">
+
   <!-- Sidebar -->
-  <app-sidebar [isOpen]="sidebarOpen" (toggleSidebar)="toggleSidebar()"></app-sidebar>
+  <app-sidebar
+    [isOpen]="sidebarOpen"
+    (toggleSidebar)="toggleSidebar()">
+  </app-sidebar>
 
   <!-- Main -->
-  <div class="main-content min-w-0">
-    <!-- Navbar -->
-    <app-navbar (toggleSidebar)="toggleSidebar()"></app-navbar>
+  <div class="main-content relative min-w-0">
 
-    <!-- Page Content -->
+    <!-- Navbar -->
+    <app-navbar
+      (toggleSidebar)="toggleSidebar()">
+    </app-navbar>
+
+    <!-- Loading del dashboard -->
+    <app-loading
+      *ngIf="loading$ | async"
+      [fullscreen]="false">
+    </app-loading>
+
+    <!-- Contenido -->
     <main class="flex-1 overflow-y-auto p-4 md:p-6">
       <router-outlet></router-outlet>
     </main>
+
   </div>
+
 </div>

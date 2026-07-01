@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-loading',
@@ -6,4 +6,7 @@ import { Component } from '@angular/core';
   templateUrl: './loading.html',
   styleUrl: './loading.css',
 })
-export class Loading {}
+export class Loading {
+    @Input() fullscreen = true;
+
+}

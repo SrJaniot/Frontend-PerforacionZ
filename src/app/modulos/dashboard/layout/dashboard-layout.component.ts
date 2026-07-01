@@ -1,8 +1,9 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { SeguridadService } from '../../../servicios/seguridad';
 import { UsuarioValidadoModel } from '../../../Modelos/UsuarioValidado.model';
 import { forkJoin } from 'rxjs';
 import { ItemMenuModel } from '../../../Modelos/item.menu.model';
+import { LoadingService } from '../../../servicios/loading-service';
 
 @Component({
   selector: 'app-dashboard-layout',
@@ -15,6 +16,8 @@ export class DashboardLayoutComponent {
   sidebarOpen = true;
   sesionActiva= false;
   cargando=true;
+  private loadingService = inject(LoadingService);
+  loading$ = this.loadingService.loading$;
 
 
 
@@ -23,7 +26,7 @@ export class DashboardLayoutComponent {
   //constructor
   constructor(
     private seguridadService: SeguridadService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
 
 
   ) {}
