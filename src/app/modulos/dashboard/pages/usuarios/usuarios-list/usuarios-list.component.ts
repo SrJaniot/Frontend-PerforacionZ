@@ -4,6 +4,8 @@ import { UsuariosService } from '../../../../../servicios/usuarios';
 import { usuarioModel } from '../../../../../Modelos/usuario.model';
 import { LoadingService } from '../../../../../servicios/loading-service';
 import { RespuestaServerObtenerUsuarios } from '../../../../../Modelos/RespuestaServerObtenerUsuarios.model';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { SeguridadService } from '../../../../../servicios/seguridad';
 
 @Component({
   selector: 'app-usuarios-list',
@@ -15,23 +17,29 @@ export class UsuariosListComponent {
   searchQuery = '';
   filterRole = 'todos';
   showModal = false;
+  showEditar = false;
+  idSupervisorSeleccionado: String | null = null;
 
   // Configuración de paginación
   currentPage = 1;
   itemsPerPage = 10;
 
   ListadeUsuarios: usuarioModel[] = [];
+  formSupervisor: FormGroup = new FormGroup({});
+
 
   constructor(
     private usuariosService: UsuariosService,
-    private toast: NgToastService ,
+    private toast: NgToastService,
     private loadingService: LoadingService,
+    private seguridadService: SeguridadService,
 
-  ) {}
+  ) { }
 
   ngOnInit() {
     //monstrar loading mientras carga los usuarios
     this.loadingService.show();
+    this.construirFormularioSupervisor();
     //cargar los usuarios
     this.usuariosService.ObtenerUsuarios().subscribe(
       (data: RespuestaServerObtenerUsuarios) => {
@@ -39,12 +47,12 @@ export class UsuariosListComponent {
         if (data.CODIGO === 200) {
           this.ListadeUsuarios = data.DATOS || [];
         } else {
-          this.toast.danger(data.MENSAJE!,'Error',5000,true,true,true);
+          this.toast.danger(data.MENSAJE!, 'Error', 5000, true, true, true);
         }
         this.loadingService.hide();
       },
       (error) => {
-        this.toast.danger('Error al cargar los usuarios','Error',5000,true,true,true);
+        this.toast.danger('Error al cargar los usuarios', 'Error', 5000, true, true, true);
         this.loadingService.hide();
       }
     );
@@ -55,6 +63,50 @@ export class UsuariosListComponent {
 
 
 
+  construirFormularioSupervisor() {
+    this.formSupervisor = new FormGroup({
+      id_supervisor: new FormControl('', Validators.required),
+      nombre_supervisor: new FormControl('', Validators.required),
+      correo_supervisor: new FormControl('', [Validators.required, Validators.email]),
+      // que el numero de celular sea un numero de 10 digitos y solo numeros
+      numero_celular: new FormControl('', [Validators.required, Validators.pattern(/^\d{10}$/), Validators.minLength(10), Validators.maxLength(10)]),
+    });
+  }
+
+
+  cargarUsuarios(): void {
+
+    this.loadingService.show();
+
+    this.usuariosService.ObtenerUsuarios().subscribe(
+      (data: RespuestaServerObtenerUsuarios) => {
+
+        if (data.CODIGO === 200) {
+          this.ListadeUsuarios = data.DATOS || [];
+        } else {
+          this.toast.danger(data.MENSAJE!, 'Error', 5000, true, true, true);
+        }
+
+        this.loadingService.hide();
+
+      },
+      () => {
+
+        this.toast.danger(
+          'Error al cargar los usuarios',
+          'Error',
+          5000,
+          true,
+          true,
+          true
+        );
+
+        this.loadingService.hide();
+
+      }
+    );
+
+  }
 
   users = [
     { id: 1, name: 'Carlos Méndez', email: 'cmendes@empresa.com', role: 'Administrador', status: 'Activo', avatar: 'CM', lastLogin: '05/05/2025', created: '01/01/2024' },
@@ -77,7 +129,8 @@ export class UsuariosListComponent {
       ) &&
       (
         (u.nombre ?? '').toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        (u.correo ?? '').toLowerCase().includes(this.searchQuery.toLowerCase())
+        (u.correo ?? '').toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        (u.id_usuario ?? '').toLowerCase().includes(this.searchQuery.toLowerCase())
       )
     );
   }
@@ -144,7 +197,7 @@ export class UsuariosListComponent {
 
 
   obtenerRol(rol?: number): string {
-  switch (rol) {
+    switch (rol) {
       case 1:
         return 'Administrador';
       case 2:
@@ -162,5 +215,74 @@ export class UsuariosListComponent {
     } else {
       return 'Desconocido';
     }
+  }
+
+
+
+  // logica de creacion de supervisor
+  crearSupervisor() {
+
+    // validar primero el formulario este valido
+    if (this.formSupervisor.valid) {
+      const id_supervisor = this.formSupervisor.get('id_supervisor')?.value;
+      const nombre_supervisor = this.formSupervisor.get('nombre_supervisor')?.value;
+      const correo_supervisor = this.formSupervisor.get('correo_supervisor')?.value;
+      const numero_celular = this.formSupervisor.get('numero_celular')?.value;
+
+      // mostrar loading mientras se crea el supervisor
+      this.loadingService.show();
+      // tomamos el nombre de la cuenta actual que esta logueada para enviarlo al servicio como usuario de creacion
+      const usuario_creacion = this.seguridadService.ObtenerDatosUsuarioIdentificadoSESION()?.usuario?.nombre || 'admin';
+
+      // llamar al servicio para crear el supervisor
+      this.usuariosService.CrearSupervisor(id_supervisor, nombre_supervisor, correo_supervisor, numero_celular, usuario_creacion!).subscribe(
+        (data) => {
+          if (data.CODIGO === 200) {
+            this.toast.success(data.MENSAJE!, 'Exito', 5000, true, true, true);
+            // cerrar modal
+            this.showModal = false;
+            // limpiar formulario
+            this.formSupervisor.reset();
+            // recargar la lista de usuarios
+            this.usuariosService.ObtenerUsuarios().subscribe(
+              (data: RespuestaServerObtenerUsuarios) => {
+                if (data.CODIGO === 200) {
+                  this.ListadeUsuarios = data.DATOS || [];
+                } else {
+                  this.toast.danger(data.MENSAJE!, 'Error', 5000, true, true, true);
+                }
+                this.loadingService.hide();
+              },
+              (error) => {
+                this.toast.danger('Error al cargar los usuarios', 'Error', 5000, true, true, true);
+                this.loadingService.hide();
+              }
+            );
+          } else {
+            this.toast.danger(data.MENSAJE!, 'Error', 5000, true, true, true);
+            this.loadingService.hide();
+          }
+        },
+        (error) => {
+          this.toast.danger('Error al crear el supervisor', 'Error', 5000, true, true, true);
+          this.loadingService.hide();
+        }
+      );
+    }
+    // si el formulario no es valido mostrar mensaje de error
+    else {
+      this.toast.warning('Por favor complete todos los campos correctamente', 'Advertencia', 5000, true, true, true);
+    }
+
+
+  }
+
+
+  //logica de edicion de supervisor
+  editar(id_usuario: String) {
+
+    this.idSupervisorSeleccionado = id_usuario!;
+    this.showEditar = true;
+
   }
 }

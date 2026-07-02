@@ -44,7 +44,7 @@ export class UsuariosService {
   }
 
   //funcion para actualizar un supervisor
-  ActualizarSupervisor(id_supervisor: string, nombre_supervisor: string, Correo_supervisor: string, numero_celular: string, ususario_modificacion: string, cuenta_activa: boolean): Observable<RespuestaServerSinDATA> {
+  ActualizarSupervisor(id_supervisor: String, nombre_supervisor: String, Correo_supervisor: String, numero_celular: String, ususario_modificacion: String, cuenta_activa: boolean): Observable<RespuestaServerSinDATA> {
     const headers = this.getHeaders();
     return this.http.post<RespuestaServerSinDATA>(`${this.url_ms_negocio}ActualizarSupervisor`, {
       id_supervisor: id_supervisor,
@@ -64,7 +64,7 @@ export class UsuariosService {
   }
 
   //funcion para obtener un usuario por id
-  ObtenerUsuarioPorId(id_usuario: string): Observable<RespuestaServerObtenerUsuario> {
+  ObtenerUsuarioPorId(id_usuario: String): Observable<RespuestaServerObtenerUsuario> {
     const headers = this.getHeaders();
     return this.http.get<RespuestaServerObtenerUsuario>(this.url_ms_negocio + 'ObtenerUsuarioSeguridadPorId/' + id_usuario, { headers });
   }

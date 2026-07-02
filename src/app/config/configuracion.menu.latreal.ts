@@ -26,6 +26,13 @@ export namespace ConfiguracionMenuLateral {
         icono:"drill",
         texto:"brocas"
 
+      },
+      {
+        menuid: 5,
+        ruta: '/dashboard/MisBrocas',
+        icono:"drill",
+        texto:"brocas"
+
       }
 
   ];
