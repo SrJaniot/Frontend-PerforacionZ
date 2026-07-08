@@ -1,9 +1,11 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { InventarioListComponent } from './inventario-list/inventario-list.component';
 
 const routes: Routes = [
-  { path: '', component: InventarioListComponent }
+  {
+    path: '',
+    loadComponent: () => import('./inventario-list/inventario-list.component').then(m => m.InventarioListComponent)
+  }
 ];
 
 @NgModule({

@@ -1,0 +1,82 @@
+<div
+  *ngIf="showModal && proyecto"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-3 sm:p-4"
+  (click)="cerrar.emit()"
+>
+  <div
+    class="card w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 animate-slide-up shadow-2xl"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Detalle del proyecto</p>
+        <h3 class="text-xl font-bold text-white font-display mt-1">{{ proyecto.nombreProyecto }}</h3>
+      </div>
+
+      <button
+        type="button"
+        (click)="cerrar.emit()"
+        class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="card p-4 border border-slate-700">
+        <p class="text-slate-500 text-xs uppercase tracking-wide">Id del proyecto</p>
+        <p class="text-white font-semibold mt-2">{{ proyecto.idProyecto }}</p>
+      </div>
+      <div class="card p-4 border border-slate-700">
+        <p class="text-slate-500 text-xs uppercase tracking-wide">Supervisor</p>
+        <p class="text-white font-semibold mt-2">{{ proyecto.nombreSupervisor }}</p>
+      </div>
+      <div class="card p-4 border border-slate-700">
+        <p class="text-slate-500 text-xs uppercase tracking-wide">Fecha de creación</p>
+        <p class="text-white font-semibold mt-2">{{ proyecto.fechaCreacion }}</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div class="card p-4 border border-slate-700">
+        <p class="text-slate-500 text-xs uppercase tracking-wide">Departamento</p>
+        <p class="text-white font-semibold mt-2">{{ proyecto.departamento }}</p>
+      </div>
+      <div class="card p-4 border border-slate-700">
+        <p class="text-slate-500 text-xs uppercase tracking-wide">Municipio</p>
+        <p class="text-white font-semibold mt-2">{{ proyecto.municipio }}</p>
+      </div>
+    </div>
+
+    <div class="space-y-4">
+      <div class="card p-4 border border-slate-700">
+        <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">Descripción</p>
+        <p class="text-slate-200 leading-relaxed">{{ proyecto.descripcionProyecto }}</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="card p-4 border border-slate-700">
+          <p class="text-slate-500 text-xs uppercase tracking-wide">Estado</p>
+          <p class="text-white font-semibold mt-2">{{ proyecto.status }}</p>
+        </div>
+        <div class="card p-4 border border-slate-700">
+          <p class="text-slate-500 text-xs uppercase tracking-wide">Prioridad</p>
+          <p class="text-white font-semibold mt-2">{{ proyecto.priority }}</p>
+        </div>
+        <div class="card p-4 border border-slate-700">
+          <p class="text-slate-500 text-xs uppercase tracking-wide">Color</p>
+          <div class="mt-2 flex items-center gap-3">
+            <span class="w-3 h-3 rounded-full" [class]="colorClass"></span>
+            <span class="text-white font-semibold">{{ proyecto.color }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-end mt-6">
+      <button type="button" class="btn-secondary" (click)="cerrar.emit()">Cerrar</button>
+    </div>
+  </div>
+</div>
