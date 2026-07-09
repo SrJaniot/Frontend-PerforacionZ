@@ -84,6 +84,50 @@
   </div>
 
   <div class="space-y-4">
+    <div class="space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold text-white font-display">Brocas asignadas al proyecto</h3>
+        <span class="text-sm text-slate-400">{{ brocasPrestadas.length }} registros</span>
+      </div>
+
+      <div *ngIf="cargandoBrocasPrestadas" class="card p-6 text-center text-slate-400">
+        Cargando brocas asignadas...
+      </div>
+
+      <div *ngIf="!cargandoBrocasPrestadas && brocasPrestadas.length; else sinBrocasPrestadas" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div *ngFor="let prestamo of brocasPrestadas; trackBy: trackPrestamo" class="card p-5 space-y-4">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h4 class="text-lg font-semibold text-white">{{ prestamo.nombreBroca }}</h4>
+              <p class="text-slate-400 text-sm mt-1">Serial {{ prestamo.serialBroca }}</p>
+            </div>
+            <span class="badge" [class]="'badge ' + badgePrestamoEstado(prestamo.estadoPrestamo)">{{ prestamo.estadoPrestamo }}</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-3">
+              <p class="text-xs uppercase tracking-wide text-slate-500">Id préstamo</p>
+              <p class="text-white font-medium mt-2">{{ prestamo.idPrestamo }}</p>
+            </div>
+            <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-3">
+              <p class="text-xs uppercase tracking-wide text-slate-500">Fecha préstamo</p>
+              <p class="text-white font-medium mt-2">{{ prestamo.fechaPrestamo }}</p>
+            </div>
+            <div class="rounded-xl border border-slate-700 bg-slate-900/60 p-3">
+              <p class="text-xs uppercase tracking-wide text-slate-500">Fecha devolución</p>
+              <p class="text-white font-medium mt-2">{{ prestamo.fechaDevolucion || 'Pendiente' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #sinBrocasPrestadas>
+        <div *ngIf="!cargandoBrocasPrestadas" class="rounded-xl border border-dashed border-slate-700 bg-slate-900/40 p-5 text-sm text-slate-400">
+          Este proyecto todavía no tiene brocas asignadas.
+        </div>
+      </ng-template>
+    </div>
+
     <div class="flex items-center justify-between">
       <h3 class="text-xl font-bold text-white font-display">Perforaciones asignadas</h3>
       <span class="text-sm text-slate-400">{{ proyecto.perforaciones.length }} registros</span>

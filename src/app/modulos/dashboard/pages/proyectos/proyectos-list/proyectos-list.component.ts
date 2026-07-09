@@ -106,6 +106,10 @@ export class ProyectosListComponent implements OnInit, OnDestroy {
     return Array.from({ length: this.totalPages }, (_, index) => index + 1);
   }
 
+  get mobilePageNumbers(): number[] {
+    return this.buildMobilePageNumbers(this.safeCurrentPage, this.totalPages);
+  }
+
   get paginatedProjects(): ProyectoModel[] {
     const page = this.safeCurrentPage;
     const startIndex = (page - 1) * this.pageSize;
@@ -178,6 +182,18 @@ export class ProyectosListComponent implements OnInit, OnDestroy {
 
   paginaSiguiente(): void {
     this.irAPagina(this.currentPage + 1);
+  }
+
+  private buildMobilePageNumbers(currentPage: number, totalPages: number): number[] {
+    if (totalPages <= 2) {
+      return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
+
+    if (currentPage >= totalPages) {
+      return [totalPages - 1, totalPages];
+    }
+
+    return [currentPage, currentPage + 1];
   }
 
   onSearchChange(): void {

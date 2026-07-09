@@ -167,23 +167,42 @@
 
   <div *ngIf="totalProjects > pageSize" class="card p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <p class="text-sm text-slate-400">Página {{ safeCurrentPage }} de {{ totalPages }}</p>
-    <div class="flex flex-wrap items-center justify-end gap-2">
-      <button type="button" class="btn-secondary w-full sm:w-auto px-3 py-2" (click)="paginaAnterior()" [disabled]="currentPage === 1">Anterior</button>
-      <button
-        type="button"
-        *ngFor="let page of pageNumbers"
-        class="w-full sm:w-auto px-3 py-2 rounded-lg border transition-all"
-        [class.bg-blue-500]="currentPage === page"
-        [class.text-white]="currentPage === page"
-        [class.border-blue-500]="currentPage === page"
-        [class.bg-slate-800]="currentPage !== page"
-        [class.text-slate-300]="currentPage !== page"
-        [class.border-slate-700]="currentPage !== page"
-        (click)="irAPagina(page)"
-      >
-        {{ page }}
-      </button>
-      <button type="button" class="btn-secondary w-full sm:w-auto px-3 py-2" (click)="paginaSiguiente()" [disabled]="currentPage === totalPages">Siguiente</button>
+    <div class="flex items-center justify-end gap-2">
+      <button type="button" class="btn-secondary px-3 py-2" (click)="paginaAnterior()" [disabled]="safeCurrentPage === 1">Anterior</button>
+
+      <ng-container *ngFor="let page of mobilePageNumbers">
+        <button
+          type="button"
+          class="sm:hidden px-3 py-2 rounded-lg border transition-all"
+          [class.bg-blue-500]="safeCurrentPage === page"
+          [class.text-white]="safeCurrentPage === page"
+          [class.border-blue-500]="safeCurrentPage === page"
+          [class.bg-slate-800]="safeCurrentPage !== page"
+          [class.text-slate-300]="safeCurrentPage !== page"
+          [class.border-slate-700]="safeCurrentPage !== page"
+          (click)="irAPagina(page)"
+        >
+          {{ page }}
+        </button>
+      </ng-container>
+
+      <ng-container *ngFor="let page of pageNumbers">
+        <button
+          type="button"
+          class="hidden sm:inline-flex px-3 py-2 rounded-lg border transition-all"
+          [class.bg-blue-500]="safeCurrentPage === page"
+          [class.text-white]="safeCurrentPage === page"
+          [class.border-blue-500]="safeCurrentPage === page"
+          [class.bg-slate-800]="safeCurrentPage !== page"
+          [class.text-slate-300]="safeCurrentPage !== page"
+          [class.border-slate-700]="safeCurrentPage !== page"
+          (click)="irAPagina(page)"
+        >
+          {{ page }}
+        </button>
+      </ng-container>
+
+      <button type="button" class="btn-secondary px-3 py-2" (click)="paginaSiguiente()" [disabled]="safeCurrentPage === totalPages">Siguiente</button>
     </div>
   </div>
 

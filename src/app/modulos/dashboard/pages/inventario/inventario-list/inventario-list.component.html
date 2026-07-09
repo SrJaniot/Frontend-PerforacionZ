@@ -1,15 +1,15 @@
 <div class="animate-fade-in space-y-5">
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <div>
       <h2 class="text-2xl font-bold text-white font-display">Inventario de Brocas</h2>
-      <p class="text-slate-400 text-sm mt-1">CRUD de modelos de brocas y brocas registradas</p>
+      <p class="text-slate-400 text-sm mt-1">Modelos e instancias conectados al backend</p>
     </div>
     <div class="flex items-center gap-2">
-      <button (click)="abrirCrearModelo()" class="btn-secondary flex items-center gap-2 text-sm">
+      <button type="button" (click)="abrirCrearModelo()" class="btn-secondary flex items-center gap-2 text-sm">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
         Nuevo Modelo
       </button>
-      <button (click)="abrirCrearBroca()" class="btn-primary flex items-center gap-2">
+      <button type="button" (click)="abrirCrearBroca()" class="btn-primary flex items-center gap-2">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
         Registrar Broca
       </button>
@@ -39,6 +39,28 @@
     >
       Brocas registradas
     </button>
+    <button
+      type="button"
+      class="flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition-all"
+      [class.bg-blue-600]="activeTab === 'prestadas'"
+      [class.text-white]="activeTab === 'prestadas'"
+      [class.bg-slate-800]="activeTab !== 'prestadas'"
+      [class.text-slate-400]="activeTab !== 'prestadas'"
+      (click)="cambiarTab('prestadas')"
+    >
+      Brocas prestadas
+    </button>
+    <button
+      type="button"
+      class="flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition-all"
+      [class.bg-blue-600]="activeTab === 'historial'"
+      [class.text-white]="activeTab === 'historial'"
+      [class.bg-slate-800]="activeTab !== 'historial'"
+      [class.text-slate-400]="activeTab !== 'historial'"
+      (click)="cambiarTab('historial')"
+    >
+      Historial de préstamo
+    </button>
   </div>
 
   @if (activeTab === 'modelos') {
@@ -48,75 +70,139 @@
         <p class="text-xl font-bold text-white font-display">{{ totalModelos }}</p>
       </div>
       <div class="card p-4 text-center">
-        <p class="text-slate-400 text-xs mb-1">Tipos disponibles</p>
-        <p class="text-xl font-bold text-emerald-400 font-display">{{ tiposBroca.length }}</p>
+        <p class="text-slate-400 text-xs mb-1">Tipos</p>
+        <p class="text-xl font-bold text-emerald-400 font-display">{{ tiposBrocaDisponibles }}</p>
       </div>
       <div class="card p-4 text-center">
         <p class="text-slate-400 text-xs mb-1">Matrices</p>
-        <p class="text-xl font-bold text-amber-400 font-display">{{ matricesBroca.length }}</p>
+        <p class="text-xl font-bold text-amber-400 font-display">{{ matricesBrocaDisponibles }}</p>
       </div>
       <div class="card p-4 text-center">
         <p class="text-slate-400 text-xs mb-1">Marcas</p>
-        <p class="text-xl font-bold text-cyan-400 font-display">{{ marcasBroca.length }}</p>
+        <p class="text-xl font-bold text-cyan-400 font-display">{{ marcasBrocaDisponibles }}</p>
       </div>
     </div>
 
     <div class="card p-4">
       <div class="relative">
         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-        <input [(ngModel)]="searchModelos" type="text" placeholder="Buscar modelos por nombre, tipo, tamaño, matrix o marca..." class="input-field pl-9" />
+        <input [(ngModel)]="searchModelos" type="text" placeholder="Buscar modelo por id, nombre, tipo, tamaño, matrix, marca o descripción..." class="input-field pl-9" />
       </div>
     </div>
 
-    <div class="card overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="table-nexus">
-          <thead>
-            <tr>
-              <th>Nombre de broca</th>
-              <th>Tipo</th>
-              <th class="hidden md:table-cell">Descripción</th>
-              <th>Tamaño</th>
-              <th class="hidden lg:table-cell">Matrix</th>
-              <th class="hidden xl:table-cell">Marca</th>
-              <th class="text-right">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (modelo of modelosFiltrados; track modelo.idModeloBroca) {
-              <tr>
-                <td>
-                  <div>
-                    <p class="font-medium text-white">{{ modelo.nombreBroca }}</p>
-                    <p class="text-xs text-slate-500 font-mono">{{ modelo.idModeloBroca }}</p>
-                  </div>
-                </td>
-                <td><span class="badge badge-neutral">{{ modelo.tipoBroca }}</span></td>
-                <td class="hidden md:table-cell text-slate-400 max-w-md truncate">{{ modelo.descripcionBroca }}</td>
-                <td class="text-slate-300">{{ modelo.tamanoBroca }}</td>
-                <td class="hidden lg:table-cell text-slate-300">{{ modelo.matrixBroca }}</td>
-                <td class="hidden xl:table-cell text-slate-300">{{ modelo.marcaBroca }}</td>
-                <td class="text-right">
-                  <div class="flex items-center justify-end gap-1">
-                    <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-blue-900/20 transition-all" title="Editar" (click)="abrirEditarModelo(modelo)">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                    </button>
-                    <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-900/20 transition-all" title="Eliminar" (click)="eliminarModelo(modelo)">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="7" class="py-10 text-center text-slate-400">No hay modelos que coincidan con tu búsqueda.</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+    @if (loadingModelos) {
+      <div class="card p-6 text-center text-slate-400">Cargando información desde la base de datos...</div>
+    }
+
+    @if (errorCargaModelos) {
+      <div class="card border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+        {{ errorCargaModelos }}
       </div>
-    </div>
-  } @else {
+    }
+
+    @if (totalModelos > 0) {
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-sm text-slate-400">
+        <p>Mostrando {{ startModelosIndex }} - {{ endModelosIndex }} de {{ totalModelos }} modelos</p>
+        <p>Página {{ safeCurrentModelosPage }} de {{ totalModelosPages }}</p>
+      </div>
+    }
+
+    @if (!loadingModelos) {
+      <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="table-nexus">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Tamaño</th>
+                <th class="hidden lg:table-cell">Matrix</th>
+                <th class="hidden xl:table-cell">Marca</th>
+                <th class="hidden xl:table-cell">Descripción</th>
+                <th class="text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (modelo of paginatedModelos; track modelo.idModeloBroca) {
+                <tr>
+                  <td class="font-mono text-slate-300 text-xs">{{ modelo.idModeloBroca }}</td>
+                  <td>
+                    <div>
+                      <p class="font-medium text-white">{{ modelo.nombreBroca }}</p>
+                      <p class="text-xs text-slate-500">{{ modelo.tipoBroca }}</p>
+                    </div>
+                  </td>
+                  <td><span class="badge badge-neutral">{{ modelo.tipoBroca }}</span></td>
+                  <td class="text-slate-300">{{ modelo.tamanoBroca }}</td>
+                  <td class="hidden lg:table-cell text-slate-300">{{ modelo.matrixBroca }}</td>
+                  <td class="hidden xl:table-cell text-slate-300">{{ modelo.marcaBroca }}</td>
+                  <td class="hidden xl:table-cell text-slate-400 max-w-md truncate">{{ modelo.descripcionBroca }}</td>
+                  <td class="text-right">
+                    <div class="flex items-center justify-end gap-1">
+                      <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-blue-900/20 transition-all" title="Editar" (click)="abrirEditarModelo(modelo)">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                      </button>
+                      <button type="button" [disabled]="deletingModeloId === modelo.idModeloBroca" class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-900/20 transition-all disabled:opacity-50" title="Eliminar" (click)="eliminarModelo(modelo)">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="py-10 text-center text-slate-400">No hay modelos que coincidan con tu búsqueda.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      @if (totalModelos > pageSize) {
+        <div class="card p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-sm text-slate-400">Página {{ safeCurrentModelosPage }} de {{ totalModelosPages }}</p>
+          <div class="flex items-center justify-end gap-2">
+            <button type="button" class="btn-secondary px-3 py-2" (click)="paginaAnteriorModelos()" [disabled]="safeCurrentModelosPage === 1">Anterior</button>
+
+            <ng-container *ngFor="let page of mobilePageNumbersModelos">
+              <button
+                type="button"
+                class="sm:hidden px-3 py-2 rounded-lg border transition-all"
+                [class.bg-blue-500]="safeCurrentModelosPage === page"
+                [class.text-white]="safeCurrentModelosPage === page"
+                [class.border-blue-500]="safeCurrentModelosPage === page"
+                [class.bg-slate-800]="safeCurrentModelosPage !== page"
+                [class.text-slate-300]="safeCurrentModelosPage !== page"
+                [class.border-slate-700]="safeCurrentModelosPage !== page"
+                (click)="irAPaginaModelos(page)"
+              >
+                {{ page }}
+              </button>
+            </ng-container>
+
+            <ng-container *ngFor="let page of pageNumbersModelos">
+              <button
+                type="button"
+                class="hidden sm:inline-flex px-3 py-2 rounded-lg border transition-all"
+                [class.bg-blue-500]="safeCurrentModelosPage === page"
+                [class.text-white]="safeCurrentModelosPage === page"
+                [class.border-blue-500]="safeCurrentModelosPage === page"
+                [class.bg-slate-800]="safeCurrentModelosPage !== page"
+                [class.text-slate-300]="safeCurrentModelosPage !== page"
+                [class.border-slate-700]="safeCurrentModelosPage !== page"
+                (click)="irAPaginaModelos(page)"
+              >
+                {{ page }}
+              </button>
+            </ng-container>
+
+            <button type="button" class="btn-secondary px-3 py-2" (click)="paginaSiguienteModelos()" [disabled]="safeCurrentModelosPage === totalModelosPages">Siguiente</button>
+          </div>
+        </div>
+      }
+    }
+  } @else if (activeTab === 'brocas') {
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div class="card p-4 text-center">
         <p class="text-slate-400 text-xs mb-1">Total brocas</p>
@@ -127,91 +213,421 @@
         <p class="text-xl font-bold text-emerald-400 font-display">{{ brocasDisponibles }}</p>
       </div>
       <div class="card p-4 text-center">
+        <p class="text-slate-400 text-xs mb-1">Nuevas</p>
+        <p class="text-xl font-bold text-emerald-400 font-display">{{ brocasNuevas }}</p>
+      </div>
+      <div class="card p-4 text-center">
         <p class="text-slate-400 text-xs mb-1">En uso</p>
-        <p class="text-xl font-bold text-blue-400 font-display">{{ brocasEnUso }}</p>
+        <p class="text-xl font-bold text-blue-400 font-display">{{ brocasEnUsoEstado }}</p>
       </div>
       <div class="card p-4 text-center">
-        <p class="text-slate-400 text-xs mb-1">Mantenimiento</p>
-        <p class="text-xl font-bold text-amber-400 font-display">{{ brocasEnMantenimiento }}</p>
+        <p class="text-slate-400 text-xs mb-1">Usadas</p>
+        <p class="text-xl font-bold text-amber-400 font-display">{{ brocasUsadas }}</p>
       </div>
       <div class="card p-4 text-center">
-        <p class="text-slate-400 text-xs mb-1">Retiradas</p>
-        <p class="text-xl font-bold text-red-400 font-display">{{ brocasRetiradas }}</p>
+        <p class="text-slate-400 text-xs mb-1">Desgastadas</p>
+        <p class="text-xl font-bold text-red-400 font-display">{{ brocasDesgastadas }}</p>
       </div>
     </div>
 
     <div class="card p-4">
       <div class="relative">
         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-        <input [(ngModel)]="searchBrocas" type="text" placeholder="Buscar broca por serial, modelo, tipo o estado..." class="input-field pl-9" />
+        <input [(ngModel)]="searchBrocas" type="text" placeholder="Buscar broca por serial, modelo, estado, disponibilidad o fecha..." class="input-field pl-9" />
       </div>
     </div>
 
-    <div class="card overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="table-nexus">
-          <thead>
-            <tr>
-              <th>Serial</th>
-              <th>Modelo</th>
-              <th class="hidden md:table-cell">Tipo</th>
-              <th class="hidden lg:table-cell">Marca</th>
-              <th>Estado</th>
-              <th class="hidden xl:table-cell">Registro</th>
-              <th class="hidden xl:table-cell">Observación</th>
-              <th class="text-right">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (broca of brocasFiltradas; track broca.idSerialBroca) {
+    @if (loadingBrocas) {
+      <div class="card p-6 text-center text-slate-400">Cargando información desde la base de datos...</div>
+    }
+
+    @if (errorCargaBrocas) {
+      <div class="card border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+        {{ errorCargaBrocas }}
+      </div>
+    }
+
+    @if (totalBrocas > 0) {
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-sm text-slate-400">
+        <p>Mostrando {{ startBrocasIndex }} - {{ endBrocasIndex }} de {{ totalBrocas }} brocas</p>
+        <p>Página {{ safeCurrentBrocasPage }} de {{ totalBrocasPages }}</p>
+      </div>
+    }
+
+    @if (!loadingBrocas) {
+      <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="table-nexus">
+            <thead>
               <tr>
-                <td class="font-mono text-slate-300 text-xs">{{ broca.idSerialBroca }}</td>
-                <td class="font-medium text-white">{{ obtenerNombreModelo(broca.idModeloBroca) }}</td>
-                <td class="hidden md:table-cell text-slate-400">{{ obtenerTipoModelo(broca.idModeloBroca) }}</td>
-                <td class="hidden lg:table-cell text-slate-400">{{ obtenerMarcaModelo(broca.idModeloBroca) }}</td>
-                <td><span class="badge" [class]="'badge ' + badgeEstadoBroca(broca.estado)">{{ broca.estado }}</span></td>
-                <td class="hidden xl:table-cell text-slate-300 font-mono text-sm">{{ broca.fechaRegistro }}</td>
-                <td class="hidden xl:table-cell text-slate-400 max-w-md truncate">{{ broca.observacion }}</td>
-                <td class="text-right">
-                  <div class="flex items-center justify-end gap-1">
-                    <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-blue-900/20 transition-all" title="Editar" (click)="abrirEditarBroca(broca)">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                    </button>
-                    <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-900/20 transition-all" title="Eliminar" (click)="eliminarBroca(broca)">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                    </button>
-                  </div>
-                </td>
+                <th>Serial</th>
+                <th>Modelo</th>
+                <th class="hidden md:table-cell">Tipo</th>
+                <th>Estado</th>
+                <th>Disponibilidad</th>
+                <th class="hidden xl:table-cell">Registro</th>
+                <th class="hidden xl:table-cell">Ultimo uso</th>
+                <th class="text-right">Acciones</th>
               </tr>
-            } @empty {
-              <tr>
-                <td colspan="8" class="py-10 text-center text-slate-400">No hay brocas que coincidan con tu búsqueda.</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (broca of paginatedBrocas; track broca.idBrocaInstanciada) {
+                <tr>
+                  <td class="font-mono text-slate-300 text-xs">{{ broca.idBrocaInstanciada }}</td>
+                  <td>
+                    <div>
+                      <p class="font-medium text-white">{{ broca.nombreModeloBroca }}</p>
+                      <p class="text-xs text-slate-500 font-mono">{{ broca.idModeloBroca }}</p>
+                    </div>
+                  </td>
+                  <td class="hidden md:table-cell text-slate-400">{{ broca.tipoModeloBroca || 'Sin tipo' }}</td>
+                  <td><span class="badge" [class]="'badge ' + badgeEstadoBroca(broca.estadoBroca)">{{ broca.estadoBroca }}</span></td>
+                  <td><span class="badge" [class]="'badge ' + badgeEstadoBroca(broca.disponibilidadBroca)">{{ broca.disponibilidadBroca }}</span></td>
+                  <td class="hidden xl:table-cell text-slate-300 font-mono text-sm">{{ broca.fechaRegistroBroca }}</td>
+                  <td class="hidden xl:table-cell text-slate-400 font-mono text-sm">{{ broca.fechaUltimoUsoBroca || 'Sin uso' }}</td>
+                  <td class="text-right">
+                    <div class="flex items-center justify-end gap-1">
+                      <button
+                        type="button"
+                        class="p-1.5 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-emerald-900/20 transition-all disabled:opacity-50"
+                        title="Registrar préstamo"
+                        (click)="abrirPrestamoModal(broca)"
+                        [disabled]="broca.disponibilidadBroca !== 'DISPONIBLE'"
+                      >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10m-13 9h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v11a2 2 0 002 2z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        class="p-1.5 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-amber-900/20 transition-all disabled:opacity-50"
+                        title="Marcar dañada"
+                        (click)="solicitarConfirmacionMarcarDaniada(broca)"
+                        [disabled]="markingDaniadaId === broca.idBrocaInstanciada || broca.estadoBroca === 'DESGASTADA'"
+                      >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </button>
+                      <button type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-blue-900/20 transition-all" title="Editar" (click)="abrirEditarBroca(broca)">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                      </button>
+                      <button type="button" [disabled]="deletingBrocaId === broca.idBrocaInstanciada" class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-900/20 transition-all disabled:opacity-50" title="Eliminar" (click)="solicitarConfirmacionEliminarBroca(broca)">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="py-10 text-center text-slate-400">No hay brocas que coincidan con tu búsqueda.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      @if (totalBrocas > pageSize) {
+        <div class="card p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-sm text-slate-400">Página {{ safeCurrentBrocasPage }} de {{ totalBrocasPages }}</p>
+          <div class="flex items-center justify-end gap-2">
+            <button type="button" class="btn-secondary px-3 py-2" (click)="paginaAnteriorBrocas()" [disabled]="safeCurrentBrocasPage === 1">Anterior</button>
+
+            <ng-container *ngFor="let page of mobilePageNumbersBrocas">
+              <button
+                type="button"
+                class="sm:hidden px-3 py-2 rounded-lg border transition-all"
+                [class.bg-blue-500]="safeCurrentBrocasPage === page"
+                [class.text-white]="safeCurrentBrocasPage === page"
+                [class.border-blue-500]="safeCurrentBrocasPage === page"
+                [class.bg-slate-800]="safeCurrentBrocasPage !== page"
+                [class.text-slate-300]="safeCurrentBrocasPage !== page"
+                [class.border-slate-700]="safeCurrentBrocasPage !== page"
+                (click)="irAPaginaBrocas(page)"
+              >
+                {{ page }}
+              </button>
+            </ng-container>
+
+            <ng-container *ngFor="let page of pageNumbersBrocas">
+              <button
+                type="button"
+                class="hidden sm:inline-flex px-3 py-2 rounded-lg border transition-all"
+                [class.bg-blue-500]="safeCurrentBrocasPage === page"
+                [class.text-white]="safeCurrentBrocasPage === page"
+                [class.border-blue-500]="safeCurrentBrocasPage === page"
+                [class.bg-slate-800]="safeCurrentBrocasPage !== page"
+                [class.text-slate-300]="safeCurrentBrocasPage !== page"
+                [class.border-slate-700]="safeCurrentBrocasPage !== page"
+                (click)="irAPaginaBrocas(page)"
+              >
+                {{ page }}
+              </button>
+            </ng-container>
+
+            <button type="button" class="btn-secondary px-3 py-2" (click)="paginaSiguienteBrocas()" [disabled]="safeCurrentBrocasPage === totalBrocasPages">Siguiente</button>
+          </div>
+        </div>
+      }
+    }
+  } @else if (activeTab === 'prestadas') {
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div class="card p-4 text-center">
+        <p class="text-slate-400 text-xs mb-1">Préstamos activos</p>
+        <p class="text-xl font-bold text-white font-display">{{ totalPrestadas }}</p>
+      </div>
+      <div class="card p-4 text-center">
+        <p class="text-slate-400 text-xs mb-1">Proyectos con préstamo</p>
+        <p class="text-xl font-bold text-cyan-400 font-display">{{ proyectosConPrestamoActivo }}</p>
+      </div>
+      <div class="card p-4 text-center">
+        <p class="text-slate-400 text-xs mb-1">Página actual</p>
+        <p class="text-xl font-bold text-amber-400 font-display">{{ safeCurrentPrestadasPage }}/{{ totalPrestadasPages }}</p>
       </div>
     </div>
+
+    <div class="card p-4">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        <input [(ngModel)]="searchPrestadas" type="text" placeholder="Buscar por préstamo, broca, proyecto, estado o fecha..." class="input-field pl-9" />
+      </div>
+    </div>
+
+    @if (loadingPrestadas) {
+      <div class="card p-6 text-center text-slate-400">Cargando préstamos activos desde la base de datos...</div>
+    }
+
+    @if (errorCargaPrestadas) {
+      <div class="card border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+        {{ errorCargaPrestadas }}
+      </div>
+    }
+
+    @if (totalPrestadas > 0) {
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-sm text-slate-400">
+        <p>Mostrando {{ startPrestadasIndex }} - {{ endPrestadasIndex }} de {{ totalPrestadas }} préstamos</p>
+        <p>Página {{ safeCurrentPrestadasPage }} de {{ totalPrestadasPages }}</p>
+      </div>
+    }
+
+    @if (!loadingPrestadas) {
+      <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="table-nexus">
+            <thead>
+              <tr>
+                <th>ID préstamo</th>
+                <th>Broca</th>
+                <th class="hidden md:table-cell">Proyecto</th>
+                <th>Estado</th>
+                <th class="hidden xl:table-cell">Fecha préstamo</th>
+                <th class="hidden xl:table-cell">Fecha devolución</th>
+                <th class="text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (prestamo of paginatedPrestadas; track prestamo.idPrestamo) {
+                <tr>
+                  <td class="font-mono text-slate-300 text-xs">{{ prestamo.idPrestamo }}</td>
+                  <td>
+                    <div>
+                      <p class="font-medium text-white">{{ prestamo.nombreBroca }}</p>
+                      <p class="text-xs text-slate-500 font-mono">{{ prestamo.idBrocaInstanciada }}</p>
+                    </div>
+                  </td>
+                  <td class="hidden md:table-cell">
+                    <div>
+                      <p class="text-white">{{ prestamo.nombreProyecto }}</p>
+                      <p class="text-xs text-slate-500 font-mono">ID {{ prestamo.idProyecto }}</p>
+                    </div>
+                  </td>
+                  <td><span class="badge" [class]="'badge ' + badgeEstadoPrestamo(prestamo.estadoPrestamo)">{{ prestamo.estadoPrestamo }}</span></td>
+                  <td class="hidden xl:table-cell text-slate-300 font-mono text-sm">{{ prestamo.fechaPrestamo || 'Sin fecha' }}</td>
+                  <td class="hidden xl:table-cell text-slate-400 font-mono text-sm">{{ prestamo.fechaDevolucion || 'Pendiente' }}</td>
+                  <td class="text-right">
+                    <button
+                      type="button"
+                      class="btn-secondary px-3 py-1.5 text-xs"
+                      (click)="irAProyectoPrestamo(prestamo)"
+                    >
+                      Ver proyecto
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="7" class="py-10 text-center text-slate-400">No hay brocas prestadas que coincidan con tu búsqueda.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      @if (totalPrestadas > pageSize) {
+        <div class="card p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-sm text-slate-400">Página {{ safeCurrentPrestadasPage }} de {{ totalPrestadasPages }}</p>
+          <div class="flex items-center justify-end gap-2">
+            <button type="button" class="btn-secondary px-3 py-2" (click)="paginaAnteriorPrestadas()" [disabled]="safeCurrentPrestadasPage === 1">Anterior</button>
+
+            <ng-container *ngFor="let page of mobilePageNumbersPrestadas">
+              <button
+                type="button"
+                class="sm:hidden px-3 py-2 rounded-lg border transition-all"
+                [class.bg-blue-500]="safeCurrentPrestadasPage === page"
+                [class.text-white]="safeCurrentPrestadasPage === page"
+                [class.border-blue-500]="safeCurrentPrestadasPage === page"
+                [class.bg-slate-800]="safeCurrentPrestadasPage !== page"
+                [class.text-slate-300]="safeCurrentPrestadasPage !== page"
+                [class.border-slate-700]="safeCurrentPrestadasPage !== page"
+                (click)="irAPaginaPrestadas(page)"
+              >
+                {{ page }}
+              </button>
+            </ng-container>
+
+            <ng-container *ngFor="let page of pageNumbersPrestadas">
+              <button
+                type="button"
+                class="hidden sm:inline-flex px-3 py-2 rounded-lg border transition-all"
+                [class.bg-blue-500]="safeCurrentPrestadasPage === page"
+                [class.text-white]="safeCurrentPrestadasPage === page"
+                [class.border-blue-500]="safeCurrentPrestadasPage === page"
+                [class.bg-slate-800]="safeCurrentPrestadasPage !== page"
+                [class.text-slate-300]="safeCurrentPrestadasPage !== page"
+                [class.border-slate-700]="safeCurrentPrestadasPage !== page"
+                (click)="irAPaginaPrestadas(page)"
+              >
+                {{ page }}
+              </button>
+            </ng-container>
+
+            <button type="button" class="btn-secondary px-3 py-2" (click)="paginaSiguientePrestadas()" [disabled]="safeCurrentPrestadasPage === totalPrestadasPages">Siguiente</button>
+          </div>
+        </div>
+      }
+    }
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="card p-4 text-center md:text-left md:col-span-2">
+        <p class="text-slate-400 text-xs mb-1">Serial consultado</p>
+        <p class="text-xl font-bold text-white font-display">{{ serialHistorial || 'Sin seleccionar' }}</p>
+      </div>
+      <div class="card p-4 text-center">
+        <p class="text-slate-400 text-xs mb-1">Movimientos</p>
+        <p class="text-xl font-bold text-cyan-400 font-display">{{ totalMovimientosHistorial }}</p>
+      </div>
+    </div>
+
+    <div class="card p-4 space-y-3">
+      <p class="text-sm text-slate-300">Consultar trayectoria de una broca por serial</p>
+      <div class="flex flex-col sm:flex-row gap-2">
+        <input
+          [(ngModel)]="serialHistorial"
+          type="text"
+          placeholder="Ej. BR-1004"
+          class="input-field flex-1"
+          (keyup.enter)="consultarHistorialPrestamo()"
+        />
+        <button type="button" class="btn-primary" (click)="consultarHistorialPrestamo()" [disabled]="loadingHistorial">
+          {{ loadingHistorial ? 'Consultando...' : 'Consultar historial' }}
+        </button>
+        <button type="button" class="btn-secondary" (click)="solicitarSerialHistorial()">
+          Cambiar serial
+        </button>
+      </div>
+    </div>
+
+    @if (loadingHistorial) {
+      <div class="card p-6 text-center text-slate-400">Cargando historial de préstamos...</div>
+    }
+
+    @if (errorCargaHistorial) {
+      <div class="card border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+        {{ errorCargaHistorial }}
+      </div>
+    }
+
+    @if (!loadingHistorial && serialHistorial && historialPrestamosBroca.length === 0 && !errorCargaHistorial) {
+      <div class="card p-6 text-center text-slate-400">No hay historial de préstamos para la broca {{ serialHistorial }}.</div>
+    }
+
+    @if (!loadingHistorial && historialPrestamosBroca.length > 0) {
+      <div class="card p-4 sm:p-6">
+        <div class="relative">
+          <div class="absolute left-[11px] top-1 bottom-1 w-0.5 bg-slate-700"></div>
+          <div class="space-y-6">
+            @for (movimiento of historialPrestamosBroca; track movimiento.idEvento; let last = $last) {
+              <div class="relative pl-8">
+                <span
+                  class="absolute left-0 top-1.5 w-[22px] h-[22px] rounded-full border-2 border-slate-900"
+                  [class.bg-cyan-500]="movimiento.estadoPrestamo === 'EN_USO'"
+                  [class.bg-emerald-500]="movimiento.estadoPrestamo === 'DEVUELTO'"
+                  [class.bg-slate-500]="movimiento.estadoPrestamo !== 'EN_USO' && movimiento.estadoPrestamo !== 'DEVUELTO'"
+                ></span>
+
+                <div class="rounded-xl border border-slate-700 bg-slate-900/40 p-4">
+                  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p class="text-sm text-slate-400">{{ movimiento.tipoEvento === 'PRESTAMO' ? 'Evento de préstamo' : 'Evento de devolución' }} #{{ movimiento.idPrestamo }}</p>
+                      <p class="text-base font-semibold text-white">{{ movimiento.nombreProyecto }}</p>
+                      <p class="text-xs text-slate-500">ID proyecto: {{ movimiento.idProyecto }}</p>
+                    </div>
+                    <span class="badge" [class]="'badge ' + badgeEstadoHistorial(movimiento.estadoPrestamo)">{{ movimiento.estadoPrestamo }}</span>
+                  </div>
+
+                  <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                    <p class="text-slate-300">
+                      <span class="text-slate-500">{{ movimiento.tipoEvento === 'PRESTAMO' ? 'Fecha préstamo:' : 'Fecha devolución:' }}</span>
+                      {{ movimiento.fechaEvento || 'Sin fecha' }}
+                    </p>
+                    <p class="text-slate-300">
+                      <span class="text-slate-500">Tipo:</span>
+                      {{ movimiento.tipoEvento === 'PRESTAMO' ? 'Asignación al proyecto' : 'Retorno a inventario' }}
+                    </p>
+                  </div>
+
+                  <div class="mt-3">
+                    <button
+                      type="button"
+                      class="text-sm text-blue-400 hover:text-blue-300 underline underline-offset-2"
+                      (click)="irAProyectoHistorial(movimiento)"
+                    >
+                      Ir al proyecto de este historial
+                    </button>
+                  </div>
+                </div>
+
+                @if (!last) {
+                  <div class="absolute left-[11px] top-[30px] h-[calc(100%+18px)] w-0.5 bg-slate-700"></div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
   }
 
   @if (showModeloModal) {
     <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="cerrarModales()">
       <div class="card w-full max-w-2xl p-6 animate-slide-up shadow-2xl max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
         <div class="flex items-center justify-between mb-5">
-          <h3 class="text-lg font-bold text-white font-display">Registrar Modelo de Broca</h3>
+          <h3 class="text-lg font-bold text-white font-display">Nuevo Modelo de Broca</h3>
           <button type="button" (click)="cerrarModales()" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
-        <form [formGroup]="formModelo" (ngSubmit)="guardarModelo()" class="space-y-4">
+        <form [formGroup]="modeloForm" (ngSubmit)="guardarModelo()" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-slate-300 mb-1.5">Nombre de broca</label>
-            <input type="text" class="input-field" formControlName="nombreBroca" placeholder="Ej. Turbo Drill X12" />
+            <input type="text" class="input-field" formControlName="nom_broca" placeholder="Ej. Turbo Drill X12" />
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-1.5">Tipo de broca</label>
-              <select class="input-field" formControlName="tipoBroca">
+              <select class="input-field" formControlName="tipo_broca">
                 <option value="">Seleccione</option>
                 @for (tipo of tiposBroca; track tipo) {
                   <option [value]="tipo">{{ tipo }}</option>
@@ -220,13 +636,13 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-1.5">Tamaño de broca</label>
-              <input type="text" class="input-field" formControlName="tamanoBroca" placeholder='Ej. 12 1/4"' />
+              <input type="number" class="input-field" formControlName="tamanop_broca" placeholder="Ej. 12.25" />
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-1.5">Matrix de broca</label>
-              <select class="input-field" formControlName="matrixBroca">
+              <select class="input-field" formControlName="matrix_broca">
                 <option value="">Seleccione</option>
                 @for (matrix of matricesBroca; track matrix) {
                   <option [value]="matrix">{{ matrix }}</option>
@@ -235,7 +651,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-1.5">Marca de broca</label>
-              <select class="input-field" formControlName="marcaBroca">
+              <select class="input-field" formControlName="marca_broca">
                 <option value="">Seleccione</option>
                 @for (marca of marcasBroca; track marca) {
                   <option [value]="marca">{{ marca }}</option>
@@ -245,11 +661,11 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-300 mb-1.5">Descripción de broca</label>
-            <textarea rows="4" class="input-field resize-none" formControlName="descripcionBroca" placeholder="Descripción técnica de la broca"></textarea>
+            <textarea rows="4" class="input-field resize-none" formControlName="descripcion_broca" placeholder="Descripción técnica de la broca"></textarea>
           </div>
           <div class="flex gap-3 pt-2">
             <button type="button" class="btn-secondary flex-1" (click)="cerrarModales()">Cancelar</button>
-            <button type="submit" class="btn-primary flex-1">Guardar Modelo</button>
+            <button type="submit" class="btn-primary flex-1" [disabled]="savingModelo">{{ savingModelo ? 'Guardando...' : 'Guardar Modelo' }}</button>
           </div>
         </form>
       </div>
@@ -265,19 +681,19 @@
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
-        <form [formGroup]="formModeloEdit" (ngSubmit)="actualizarModelo()" class="space-y-4">
+        <form [formGroup]="modeloEditForm" (ngSubmit)="actualizarModelo()" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-slate-300 mb-1.5">ID del modelo</label>
             <div class="input-field bg-slate-800 text-slate-400 cursor-not-allowed">{{ modeloSeleccionado.idModeloBroca }}</div>
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-300 mb-1.5">Nombre de broca</label>
-            <input type="text" class="input-field" formControlName="nombreBroca" />
+            <input type="text" class="input-field" formControlName="nom_broca" />
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-1.5">Tipo de broca</label>
-              <select class="input-field" formControlName="tipoBroca">
+              <select class="input-field" formControlName="tipo_broca">
                 @for (tipo of tiposBroca; track tipo) {
                   <option [value]="tipo">{{ tipo }}</option>
                 }
@@ -285,13 +701,13 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-1.5">Tamaño de broca</label>
-              <input type="text" class="input-field" formControlName="tamanoBroca" />
+              <input type="number" class="input-field" formControlName="tamanop_broca" />
             </div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-1.5">Matrix de broca</label>
-              <select class="input-field" formControlName="matrixBroca">
+              <select class="input-field" formControlName="matrix_broca">
                 @for (matrix of matricesBroca; track matrix) {
                   <option [value]="matrix">{{ matrix }}</option>
                 }
@@ -299,7 +715,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-1.5">Marca de broca</label>
-              <select class="input-field" formControlName="marcaBroca">
+              <select class="input-field" formControlName="marca_broca">
                 @for (marca of marcasBroca; track marca) {
                   <option [value]="marca">{{ marca }}</option>
                 }
@@ -308,11 +724,11 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-300 mb-1.5">Descripción de broca</label>
-            <textarea rows="4" class="input-field resize-none" formControlName="descripcionBroca"></textarea>
+            <textarea rows="4" class="input-field resize-none" formControlName="descripcion_broca"></textarea>
           </div>
           <div class="flex gap-3 pt-2">
             <button type="button" class="btn-secondary flex-1" (click)="cerrarModales()">Cancelar</button>
-            <button type="submit" class="btn-primary flex-1">Actualizar Modelo</button>
+            <button type="submit" class="btn-primary flex-1" [disabled]="savingModelo">{{ savingModelo ? 'Actualizando...' : 'Actualizar Modelo' }}</button>
           </div>
         </form>
       </div>
@@ -328,44 +744,28 @@
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
-        <form [formGroup]="formBroca" (ngSubmit)="guardarBroca()" class="space-y-4">
+        <form [formGroup]="brocaForm" (ngSubmit)="guardarBroca()" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-slate-300 mb-1.5">ID o serial de broca</label>
-              <input type="text" class="input-field" formControlName="idSerialBroca" placeholder="Ej. BR-1004" />
+              <label class="block text-sm font-medium text-slate-300 mb-1.5">Serial de broca</label>
+              <input type="text" class="input-field" formControlName="id_broca_instanciada" placeholder="Ej. BR-1004" />
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-1.5">Modelo de broca</label>
-              <select class="input-field" formControlName="idModeloBroca">
+              <select class="input-field" formControlName="id_broca">
                 <option value="">Seleccione un modelo</option>
-                @for (modelo of modeloDisponibleParaBroca; track modelo.idModeloBroca) {
+                @for (modelo of modelosDisponiblesParaBroca; track modelo.idModeloBroca) {
                   <option [value]="modelo.idModeloBroca">{{ modelo.nombreBroca }} · {{ modelo.tipoBroca }}</option>
                 }
               </select>
             </div>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-slate-300 mb-1.5">Estado</label>
-              <select class="input-field" formControlName="estado">
-                <option value="">Seleccione</option>
-                @for (estado of estadosBroca; track estado) {
-                  <option [value]="estado">{{ estado }}</option>
-                }
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-300 mb-1.5">Fecha de registro</label>
-              <input type="date" class="input-field" formControlName="fechaRegistro" />
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-300 mb-1.5">Observación</label>
-            <textarea rows="3" class="input-field resize-none" formControlName="observacion" placeholder="Observación general"></textarea>
+          <div class="card p-3 bg-slate-900/60 border border-slate-700 text-sm text-slate-400">
+            El estado inicial se asigna desde el backend al crear la broca instanciada.
           </div>
           <div class="flex gap-3 pt-2">
             <button type="button" class="btn-secondary flex-1" (click)="cerrarModales()">Cancelar</button>
-            <button type="submit" class="btn-primary flex-1">Guardar Broca</button>
+            <button type="submit" class="btn-primary flex-1" [disabled]="savingBroca">{{ savingBroca ? 'Guardando...' : 'Guardar Broca' }}</button>
           </div>
         </form>
       </div>
@@ -381,44 +781,164 @@
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
-        <form [formGroup]="formBrocaEdit" (ngSubmit)="actualizarBroca()" class="space-y-4">
+        <form [formGroup]="brocaEditForm" (ngSubmit)="actualizarBroca()" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-slate-300 mb-1.5">ID o serial de broca</label>
-            <div class="input-field bg-slate-800 text-slate-400 cursor-not-allowed">{{ brocaSeleccionada.idSerialBroca }}</div>
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">Serial de broca</label>
+            <div class="input-field bg-slate-800 text-slate-400 cursor-not-allowed">{{ brocaSeleccionada.idBrocaInstanciada }}</div>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-1.5">Modelo de broca</label>
-              <select class="input-field" formControlName="idModeloBroca">
-                @for (modelo of modeloDisponibleParaBroca; track modelo.idModeloBroca) {
-                  <option [value]="modelo.idModeloBroca">{{ modelo.nombreBroca }} · {{ modelo.tipoBroca }}</option>
-                }
-              </select>
+              <div class="input-field bg-slate-800 text-slate-400 cursor-not-allowed">{{ brocaSeleccionada.nombreModeloBroca }} · {{ brocaSeleccionada.tipoModeloBroca }}</div>
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-1.5">Estado</label>
-              <select class="input-field" formControlName="estado">
-                @for (estado of estadosBroca; track estado) {
+              <select class="input-field" formControlName="estado_broca">
+                <option value="">Seleccione</option>
+                @for (estado of estadoBrocaOptions; track estado) {
                   <option [value]="estado">{{ estado }}</option>
                 }
               </select>
             </div>
           </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">Disponibilidad</label>
+            <select class="input-field" formControlName="disponibilidad_broca">
+              <option value="">Seleccione</option>
+              @for (disponibilidad of disponibilidadBrocaOptions; track disponibilidad) {
+                <option [value]="disponibilidad">{{ disponibilidad }}</option>
+              }
+            </select>
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-1.5">Fecha de registro</label>
-              <input type="date" class="input-field" formControlName="fechaRegistro" />
+              <div class="input-field bg-slate-800 text-slate-400 cursor-not-allowed">{{ brocaSeleccionada.fechaRegistroBroca || 'Sin fecha' }}</div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-slate-300 mb-1.5">Observación</label>
-              <input type="text" class="input-field" formControlName="observacion" />
+              <label class="block text-sm font-medium text-slate-300 mb-1.5">Ultimo uso</label>
+              <div class="input-field bg-slate-800 text-slate-400 cursor-not-allowed">{{ brocaSeleccionada.fechaUltimoUsoBroca || 'Sin uso' }}</div>
             </div>
           </div>
           <div class="flex gap-3 pt-2">
             <button type="button" class="btn-secondary flex-1" (click)="cerrarModales()">Cancelar</button>
-            <button type="submit" class="btn-primary flex-1">Actualizar Broca</button>
+            <button type="submit" class="btn-primary flex-1" [disabled]="savingBroca">{{ savingBroca ? 'Actualizando...' : 'Actualizar Broca' }}</button>
           </div>
         </form>
+      </div>
+    </div>
+  }
+
+  @if (showPrestamoModal) {
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="cerrarModales()">
+      <div class="card w-full max-w-xl p-6 animate-slide-up shadow-2xl max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="text-lg font-bold text-white font-display">Registrar Préstamo de Broca</h3>
+          <button type="button" (click)="cerrarModales()" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <form [formGroup]="prestamoBrocaForm" (ngSubmit)="registrarPrestamoBroca()" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">Serial de broca</label>
+            <div class="input-field bg-slate-800 text-slate-400 cursor-not-allowed">{{ prestamoBrocaForm.controls.id_broca_instanciada.value }}</div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">Proyecto destino</label>
+            <select class="input-field" formControlName="id_proyecto" [disabled]="loadingProyectosPrestamo">
+              <option [ngValue]="null">Seleccione un proyecto activo</option>
+              @for (proyecto of proyectosDisponiblesPrestamo; track proyecto.idProyecto) {
+                <option [ngValue]="proyecto.idProyecto">{{ proyecto.idProyecto }} - {{ proyecto.nombreProyecto }} ({{ proyecto.estadoProyecto }})</option>
+              }
+            </select>
+          </div>
+
+          @if (loadingProyectosPrestamo) {
+            <div class="card p-3 bg-slate-900/60 border border-slate-700 text-sm text-slate-400">
+              Cargando proyectos disponibles...
+            </div>
+          }
+
+          @if (!loadingProyectosPrestamo && proyectosDisponiblesPrestamo.length === 0) {
+            <div class="card p-3 bg-amber-500/10 border border-amber-500/30 text-sm text-amber-200">
+              No hay proyectos disponibles para préstamo (todos están finalizados o no hay registros).
+            </div>
+          }
+
+          <div class="flex gap-3 pt-2">
+            <button type="button" class="btn-secondary flex-1" (click)="cerrarModales()">Cancelar</button>
+            <button
+              type="submit"
+              class="btn-primary flex-1"
+              [disabled]="savingPrestamo || loadingProyectosPrestamo || proyectosDisponiblesPrestamo.length === 0"
+            >
+              {{ savingPrestamo ? 'Registrando...' : 'Registrar Préstamo' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (showSerialHistorialModal) {
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="cerrarModales()">
+      <div class="card w-full max-w-lg p-6 animate-slide-up shadow-2xl" (click)="$event.stopPropagation()">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold text-white font-display">Consultar Historial de Broca</h3>
+          <button type="button" (click)="cerrarModales()" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <p class="text-sm text-slate-400 mb-4">Ingresa el serial para construir la línea de tiempo completa de movimientos.</p>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-1.5">Serial de broca</label>
+            <input [(ngModel)]="serialHistorialTemp" type="text" class="input-field" placeholder="Ej. BR-1004" (keyup.enter)="confirmarSerialHistorial()" />
+          </div>
+
+          <div class="flex gap-3">
+            <button type="button" class="btn-secondary flex-1" (click)="cerrarModales()">Cancelar</button>
+            <button type="button" class="btn-primary flex-1" (click)="confirmarSerialHistorial()">Consultar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showEliminarBrocaModal && brocaPendienteEliminar) {
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="cerrarModales()">
+      <div class="card w-full max-w-lg p-6 animate-slide-up shadow-2xl" (click)="$event.stopPropagation()">
+        <h3 class="text-lg font-bold text-white font-display mb-2">Eliminar Broca</h3>
+        <p class="text-sm text-slate-400 mb-5">
+          Vas a eliminar la broca
+          <span class="font-mono text-slate-200">{{ brocaPendienteEliminar.idBrocaInstanciada }}</span>.
+          Esta acción no se puede deshacer.
+        </p>
+        <div class="flex gap-3">
+          <button type="button" class="btn-secondary flex-1" (click)="cerrarModales()">Cancelar</button>
+          <button type="button" class="btn-primary flex-1 bg-red-600 hover:bg-red-500" (click)="confirmarEliminarBroca()">Sí, eliminar</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showMarcarDaniadaModal && brocaPendienteDaniada) {
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="cerrarModales()">
+      <div class="card w-full max-w-lg p-6 animate-slide-up shadow-2xl" (click)="$event.stopPropagation()">
+        <h3 class="text-lg font-bold text-white font-display mb-2">Marcar Broca como Dañada</h3>
+        <p class="text-sm text-slate-400 mb-5">
+          La broca
+          <span class="font-mono text-slate-200">{{ brocaPendienteDaniada.idBrocaInstanciada }}</span>
+          cambiará a estado de desgaste.
+        </p>
+        <div class="flex gap-3">
+          <button type="button" class="btn-secondary flex-1" (click)="cerrarModales()">Cancelar</button>
+          <button type="button" class="btn-primary flex-1 bg-amber-600 hover:bg-amber-500" (click)="confirmarMarcarDaniada()">Confirmar</button>
+        </div>
       </div>
     </div>
   }

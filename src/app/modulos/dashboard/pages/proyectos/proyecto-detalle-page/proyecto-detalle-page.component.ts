@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProyectoModel } from '../../../../../Modelos/proyecto.model';
 import { ProyectoListaModel } from '../../../../../Modelos/ProyectosLista.model';
+import { ModeloBrcoaPrestada } from '../../../../../Modelos/ModeloBrcoaPrestada';
 import { PerforacionModel as BackendPerforacionModel } from '../../../../../Modelos/PerforacionModel';
 import { MovimientoBrocaModel as BackendMovimientoBrocaModel } from '../../../../../Modelos/MovimientoBroca.model';
 import { ProyectoService } from '../../../../../servicios/proyecto.service';
@@ -32,6 +33,15 @@ interface MovimientoGraficaData {
   linePoints: string;
 }
 
+interface BrocaPrestadaViewModel {
+  idPrestamo: string;
+  serialBroca: string;
+  nombreBroca: string;
+  fechaPrestamo: string;
+  fechaDevolucion: string;
+  estadoPrestamo: string;
+}
+
 @Component({
   selector: 'app-proyecto-detalle-page',
   standalone: false,
@@ -41,6 +51,8 @@ interface MovimientoGraficaData {
 export class ProyectoDetallePageComponent implements OnInit {
   proyecto: ProyectoModel | null = null;
   cargandoProyecto = false;
+  cargandoBrocasPrestadas = false;
+  brocasPrestadas: BrocaPrestadaViewModel[] = [];
   private idProyecto: string | null = null;
   private readonly chartWidth = 1000;
   private readonly chartHeight = 280;
@@ -83,6 +95,18 @@ export class ProyectoDetallePageComponent implements OnInit {
     return index;
   }
 
+  trackPrestamo(index: number, prestamo: BrocaPrestadaViewModel): string {
+    return prestamo.idPrestamo || String(index);
+  }
+
+  badgePrestamoEstado(estado: string): string {
+    const valor = this.normalizarTexto(estado);
+
+    if (valor === 'disponible') return 'badge-success';
+    if (valor === 'devuelto') return 'badge-info';
+    return 'badge-neutral';
+  }
+
   private cargarProyecto(): void {
     this.cargandoProyecto = true;
     this.cd.detectChanges();
@@ -91,12 +115,36 @@ export class ProyectoDetallePageComponent implements OnInit {
       next: respuesta => {
         const proyectoEncontrado = (respuesta.DATOS ?? []).find(item => String(item.ID_PROYECTO ?? '') === this.idProyecto);
         this.proyecto = proyectoEncontrado ? this.mapProyectoDesdeApi(proyectoEncontrado) : null;
+        if (proyectoEncontrado?.ID_PROYECTO !== undefined && proyectoEncontrado?.ID_PROYECTO !== null) {
+          this.cargarBrocasPrestadasPorProyecto(Number(proyectoEncontrado.ID_PROYECTO));
+        } else {
+          this.brocasPrestadas = [];
+        }
         this.cargandoProyecto = false;
         this.cd.detectChanges();
       },
       error: () => {
         this.proyecto = null;
+        this.brocasPrestadas = [];
         this.cargandoProyecto = false;
+        this.cd.detectChanges();
+      }
+    });
+  }
+
+  private cargarBrocasPrestadasPorProyecto(idProyecto: number): void {
+    this.cargandoBrocasPrestadas = true;
+    this.cd.detectChanges();
+
+    this.proyectoService.ObtenerProyectosConBrocasAsignadas(idProyecto).subscribe({
+      next: respuesta => {
+        this.brocasPrestadas = (respuesta.DATOS ?? []).map(prestamo => this.mapPrestamoDesdeApi(prestamo));
+        this.cargandoBrocasPrestadas = false;
+        this.cd.detectChanges();
+      },
+      error: () => {
+        this.brocasPrestadas = [];
+        this.cargandoBrocasPrestadas = false;
         this.cd.detectChanges();
       }
     });
@@ -143,6 +191,17 @@ export class ProyectoDetallePageComponent implements OnInit {
     };
   }
 
+  private mapPrestamoDesdeApi(prestamo: ModeloBrcoaPrestada): BrocaPrestadaViewModel {
+    return {
+      idPrestamo: String(prestamo.ID_PRESTAMO ?? ''),
+      serialBroca: prestamo.ID_BROCA_INSTANCIADA ?? '',
+      nombreBroca: prestamo.NOMBRE_BROCA ?? '',
+      fechaPrestamo: this.formatearFecha(prestamo.FECHA_PRESTAMO),
+      fechaDevolucion: this.formatearFecha(prestamo.FECHA_DEVOLUCION),
+      estadoPrestamo: prestamo.ESTADO_PRESTAMO ?? ''
+    };
+  }
+
   private formatearFecha(fecha: Date | string | undefined): string {
     if (!fecha) {
       return '';
@@ -171,6 +230,10 @@ export class ProyectoDetallePageComponent implements OnInit {
 
   private formatearNumero(valor: number | undefined): string {
     return valor === undefined || valor === null ? '' : String(valor);
+  }
+
+  private normalizarTexto(valor: string | undefined | null): string {
+    return (valor ?? '').trim().toLowerCase();
   }
 
   getMovimientoGrafica(perforacion: ProyectoModel['perforaciones'][number]): MovimientoGraficaData {

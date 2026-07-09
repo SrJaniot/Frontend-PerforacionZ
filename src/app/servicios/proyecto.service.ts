@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 import { RespuestaServerObtenerProyectos } from '../Modelos/RespuestaServerObtenerProyectos';
 import { RespuestaServerObtenerDepartamentos } from '../Modelos/RespuestaServerObtenerDepartamentos.model';
 import { RespuestaServerObtenerMunicipiosPorDepartamento } from '../Modelos/RespuestaServerObtenerMunicipiosPorDepartamento';
+import { RespuestaServerObtenerBrocasPrestadasProyecto } from '../Modelos/RespuestaServerObtenerBrocasPrestadasProyecto';
 
 @Injectable({
   providedIn: 'root',
@@ -66,8 +67,14 @@ export class ProyectoService {
     return this.http.get<RespuestaServerObtenerProyectos>(this.url_ms_negocio + 'ObtenerProyectos', { headers });
   }
 
+  //Funcion para obtener todas las brocas asignadas a un proyecto
+  ObtenerProyectosConBrocasAsignadas( id_proyecto: number): Observable<RespuestaServerObtenerBrocasPrestadasProyecto> {
+    const headers = this.getHeaders();
+    return this.http.get<RespuestaServerObtenerBrocasPrestadasProyecto>(this.url_ms_negocio + 'ObtenerBrocasPorProyecto/' + id_proyecto, { headers });
+  }
 
-  
+
+
 
 
   //funcion para obtener un usuario por id
