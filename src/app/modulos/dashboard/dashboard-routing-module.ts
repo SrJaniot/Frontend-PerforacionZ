@@ -29,6 +29,11 @@ const routes: Routes = [
           import('./pages/inventario/inventario.module').then(m => m.InventarioModule)
       },
       {
+        path: 'mis-proyectos',
+        loadChildren: () =>
+          import('./pages/misproyectos/misproyectos-module').then(m => m.MisproyectosModule)
+      },
+      {
         path: 'estadisticas',
         loadChildren: () =>
           import('./pages/estadisticas/estadisticas.module').then(m => m.EstadisticasModule)

@@ -29,9 +29,9 @@ export namespace ConfiguracionMenuLateral {
       },
       {
         menuid: 5,
-        ruta: '/dashboard/MisBrocas',
-        icono:"drill",
-        texto:"brocas"
+        ruta: '/dashboard/mis-proyectos',
+        icono:"folder",
+        texto:"Mis Proyectos"
 
       }
 

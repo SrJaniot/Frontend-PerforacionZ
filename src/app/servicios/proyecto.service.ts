@@ -46,7 +46,7 @@ export class ProyectoService {
 
 
   //funcion para actualizar un Proyecto
-  ActualizarProyecto(id_proyecto: String, nom_proyecto: String, id_municipio: String, descripcion: String, ususario_modificacion: String, id_supervisor: String, estado_proyecto: string, prioridad_proyecto: string): Observable<RespuestaServerSinDATA> {
+  ActualizarProyecto(id_proyecto: number, nom_proyecto: String, id_municipio: String, descripcion: String, ususario_modificacion: String, id_supervisor: String, estado_proyecto: string, prioridad_proyecto: string): Observable<RespuestaServerSinDATA> {
     const headers = this.getHeaders();
     return this.http.post<RespuestaServerSinDATA>(`${this.url_ms_negocio}ActualizarProyecto`, {
       id_supervisor: id_supervisor,
@@ -58,6 +58,26 @@ export class ProyectoService {
       estado_proyecto: estado_proyecto,
       prioridad_proyecto: prioridad_proyecto
 
+
+
+    }, { headers });
+  }
+
+  //funcion para eliminar un Proyecto
+  EliminarProyecto(id_proyecto: number): Observable<RespuestaServerSinDATA> {
+    const headers = this.getHeaders();
+    return this.http.post<RespuestaServerSinDATA>(`${this.url_ms_negocio}EliminarProyecto`, {
+      id: id_proyecto,
+    }, { headers });
+  }
+
+
+  //funcion para finalizar un Proyecto
+  FinalizarProyecto(id_proyecto: number, ususario_modificacion: String): Observable<RespuestaServerSinDATA> {
+    const headers = this.getHeaders();
+    return this.http.post<RespuestaServerSinDATA>(`${this.url_ms_negocio}FinalizarProyecto`, {
+      id_proyecto: id_proyecto,
+      usuario: ususario_modificacion
     }, { headers });
   }
 
@@ -67,11 +87,24 @@ export class ProyectoService {
     return this.http.get<RespuestaServerObtenerProyectos>(this.url_ms_negocio + 'ObtenerProyectos', { headers });
   }
 
+  // funcion para obtener todos los proyectos de un supervisor
+  ObtenerProyectosPorSupervisor(id_supervisor: string): Observable<RespuestaServerObtenerProyectos> {
+    const headers = this.getHeaders();
+    return this.http.get<RespuestaServerObtenerProyectos>(this.url_ms_negocio + 'ObtenerProyectosIDSupervisor/' + id_supervisor, { headers });
+  }
+
   //Funcion para obtener todas las brocas asignadas a un proyecto
   ObtenerProyectosConBrocasAsignadas( id_proyecto: number): Observable<RespuestaServerObtenerBrocasPrestadasProyecto> {
     const headers = this.getHeaders();
     return this.http.get<RespuestaServerObtenerBrocasPrestadasProyecto>(this.url_ms_negocio + 'ObtenerBrocasPorProyecto/' + id_proyecto, { headers });
   }
+
+    //Funcion para obtener todas las brocas asignadas a un proyecto
+  ObtenerProyectosConBrocasAsignadasSupervisor( id_proyecto: number): Observable<RespuestaServerObtenerBrocasPrestadasProyecto> {
+    const headers = this.getHeaders();
+    return this.http.get<RespuestaServerObtenerBrocasPrestadasProyecto>(this.url_ms_negocio + 'ObtenerBrocasPorProyectoSupervisor/' + id_proyecto, { headers });
+  }
+
 
 
 

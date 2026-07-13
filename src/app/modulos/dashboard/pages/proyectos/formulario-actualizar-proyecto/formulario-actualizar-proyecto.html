@@ -21,6 +21,14 @@
     </div>
 
     <form [formGroup]="formProyecto" (ngSubmit)="actualizarProyecto()" class="space-y-5">
+      <div *ngIf="bloqueado" class="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+        Este proyecto ya está finalizado. No se permiten más modificaciones.
+      </div>
+
+      <div *ngIf="cargandoCatalogos" class="rounded-xl border border-slate-700 bg-slate-900/60 p-4 text-sm text-slate-300">
+        Cargando información del proyecto...
+      </div>
+
       <div>
         <label class="block text-sm font-medium text-slate-300 mb-2">Id del proyecto</label>
         <div class="input-field bg-slate-800 text-slate-400 cursor-not-allowed flex items-center">
@@ -31,32 +39,32 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium text-slate-300 mb-2">Nombre del supervisor</label>
-          <input type="text" class="input-field" formControlName="nombreSupervisor" placeholder="Nombre del supervisor" />
+          <input type="text" class="input-field bg-slate-800 text-slate-400 cursor-not-allowed" formControlName="nombreSupervisor" placeholder="Nombre del supervisor" [disabled]="true" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-slate-300 mb-2">Nombre del proyecto</label>
-          <input type="text" class="input-field" formControlName="nombreProyecto" placeholder="Nombre del proyecto" />
+          <input type="text" class="input-field" formControlName="nombreProyecto" placeholder="Nombre del proyecto" [disabled]="bloqueado || guardandoCambios || cargandoCatalogos" />
         </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium text-slate-300 mb-2">Departamento</label>
-          <select class="input-field" formControlName="departamento" (change)="onDepartamentoChange()">
+          <select class="input-field bg-slate-800 text-slate-400 cursor-not-allowed" formControlName="idDepartamento" [disabled]="true">
             <option value="">Seleccione un departamento</option>
-            <option *ngFor="let departamento of departamentos" [value]="departamento.nombre">
-              {{ departamento.nombre }}
+            <option *ngFor="let departamento of departamentos" [value]="departamento.ID_DPTO">
+              {{ departamento.NOM_DPTO }}
             </option>
           </select>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-slate-300 mb-2">Municipio</label>
-          <select class="input-field" formControlName="municipio">
+          <select class="input-field bg-slate-800 text-slate-400 cursor-not-allowed" formControlName="idMunicipio" [disabled]="true">
             <option value="">Seleccione un municipio</option>
-            <option *ngFor="let municipio of municipiosDisponibles" [value]="municipio">
-              {{ municipio }}
+            <option *ngFor="let municipio of municipiosDisponibles" [value]="municipio.ID_MUNICIPIO">
+              {{ municipio.NOM_MUNICIPIO }}
             </option>
           </select>
         </div>
@@ -64,41 +72,41 @@
 
       <div>
         <label class="block text-sm font-medium text-slate-300 mb-2">Descripción del proyecto</label>
-        <textarea rows="4" class="input-field resize-none" formControlName="descripcionProyecto"></textarea>
+        <textarea rows="4" class="input-field resize-none" formControlName="descripcionProyecto" [disabled]="bloqueado || guardandoCambios || cargandoCatalogos"></textarea>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label class="block text-sm font-medium text-slate-300 mb-2">Fecha de creación</label>
-          <input type="date" class="input-field" formControlName="fechaCreacion" />
+          <input type="date" class="input-field bg-slate-800 text-slate-400 cursor-not-allowed" formControlName="fechaCreacion" [disabled]="true" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-slate-300 mb-2">Estado</label>
-          <select class="input-field" formControlName="status">
+          <select class="input-field" formControlName="status" [disabled]="bloqueado || guardandoCambios || cargandoCatalogos">
             <option value="">Seleccione</option>
-            <option value="Iniciando">Iniciando</option>
-            <option value="En curso">En curso</option>
-            <option value="Completando">Completando</option>
-            <option value="Finalizado">Finalizado</option>
-            <option value="Nuevo">Nuevo</option>
+            <option *ngFor="let estado of estadosProyecto" [value]="estado.value">
+              {{ estado.label }}
+            </option>
           </select>
         </div>
 
         <div>
           <label class="block text-sm font-medium text-slate-300 mb-2">Prioridad</label>
-          <select class="input-field" formControlName="priority">
+          <select class="input-field" formControlName="priority" [disabled]="bloqueado || guardandoCambios || cargandoCatalogos">
             <option value="">Seleccione</option>
-            <option value="Alta">Alta</option>
-            <option value="Media">Media</option>
             <option value="Baja">Baja</option>
+            <option value="Media">Media</option>
+            <option value="Alta">Alta</option>
           </select>
         </div>
       </div>
 
       <div class="flex flex-col sm:flex-row gap-3 pt-3">
-        <button type="button" class="btn-secondary flex-1" (click)="cerrar.emit()">Cancelar</button>
-        <button type="submit" class="btn-primary flex-1">Actualizar</button>
+        <button type="button" class="btn-secondary flex-1" (click)="cerrar.emit()" [disabled]="guardandoCambios">Cancelar</button>
+        <button type="submit" class="btn-primary flex-1" [disabled]="bloqueado || guardandoCambios || cargandoCatalogos">
+          {{ guardandoCambios ? 'Actualizando...' : 'Actualizar' }}
+        </button>
       </div>
     </form>
   </div>

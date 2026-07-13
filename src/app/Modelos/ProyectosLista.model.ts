@@ -4,6 +4,8 @@ export class ProyectoListaModel {
 
   ID_PROYECTO?: number;
   ID_SUPERVISOR?: string;
+  ID_DPTO?: string;
+  ID_MUNICIPIO?: string;
   NOM_SUPERVISOR?: string;
   NOM_PROYECTO?: string;
   NOM_DEPARTAMENTO?: string;
@@ -12,6 +14,7 @@ export class ProyectoListaModel {
   ESTADO_PROYECTO?: string;
   PRIORIDAD_PROYECTO?: string;
   FECHA_CREACION?: Date;
+  FECHA_FIN_PROYECTO?: Date;
   COLOR: string= 'blue';
   PERFORACIONES?: PerforacionModel[];
 

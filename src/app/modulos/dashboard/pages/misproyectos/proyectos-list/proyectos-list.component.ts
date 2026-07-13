@@ -20,7 +20,7 @@ import { usuarioModel } from '../../../../../Modelos/usuario.model';
   styleUrls: ['./proyectos-list.component.scss'],
   standalone: false
 })
-export class ProyectosListComponent implements OnInit, OnDestroy {
+export class ProyectosSupervisorListComponent implements OnInit, OnDestroy {
   view: 'cards' | 'list' = 'cards';
   showModal = false;
   showEditar = false;
@@ -36,6 +36,7 @@ export class ProyectosListComponent implements OnInit, OnDestroy {
   errorCarga = '';
   currentPage = 1;
   readonly pageSize = 6;
+  usuarioId = '';
 
   projectForm = new FormGroup({
     id_supervisor: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -61,8 +62,6 @@ export class ProyectosListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.cargarProyectos();
-    this.cargarDepartamentos();
-    this.cargarSupervisores();
   }
 
   ngOnDestroy(): void {
@@ -159,83 +158,20 @@ export class ProyectosListComponent implements OnInit, OnDestroy {
   }
 
   abrirDetalle(proyecto: ProyectoModel): void {
-    this.router.navigate(['/dashboard/proyectos/detalle', proyecto.idProyecto]);
+    this.router.navigate(['/dashboard/mis-proyectos/detalle', proyecto.idProyecto]);
   }
 
-  abrirEditar(proyecto: ProyectoModel): void {
-    if (this.esProyectoFinalizado(proyecto)) {
-      return;
-    }
 
-    this.proyectoSeleccionado = proyecto;
-    this.showEditar = true;
-  }
 
-  abrirEliminar(proyecto: ProyectoModel): void {
-    if (this.esProyectoFinalizado(proyecto) || this.eliminandoProyecto) {
-      return;
-    }
 
-    this.proyectoAEliminar = proyecto;
-    this.showEliminar = true;
-  }
 
-  cerrarEliminar(): void {
-    if (this.eliminandoProyecto) {
-      return;
-    }
 
-    this.showEliminar = false;
-    this.proyectoAEliminar = null;
-  }
 
-  confirmarEliminar(): void {
-    if (!this.proyectoAEliminar || this.eliminandoProyecto) {
-      return;
-    }
 
-    const idProyecto = Number(this.proyectoAEliminar.idProyecto);
 
-    if (Number.isNaN(idProyecto)) {
-      this.toast.danger('El id del proyecto no es válido para eliminarlo.', 'Error', 5000, true, true, true);
-      return;
-    }
 
-    this.eliminandoProyecto = true;
-    this.cd.detectChanges();
 
-    this.proyectoService.EliminarProyecto(idProyecto)
-      .pipe(finalize(() => {
-        this.eliminandoProyecto = false;
-        this.cd.detectChanges();
-      }))
-      .subscribe({
-        next: respuesta => {
-          if (respuesta.CODIGO !== 200) {
-            this.toast.danger(respuesta.MENSAJE || 'No fue posible eliminar el proyecto.', 'Error', 5000, true, true, true);
-            return;
-          }
 
-          this.showEliminar = false;
-          this.proyectoAEliminar = null;
-          this.toast.success(respuesta.MENSAJE || 'Proyecto eliminado correctamente.', 'Éxito', 5000, true, true, true);
-          this.cargarProyectos();
-        },
-        error: () => {
-          this.toast.danger('Error al eliminar el proyecto.', 'Error', 5000, true, true, true);
-        }
-      });
-  }
-
-  esProyectoFinalizado(proyecto: ProyectoModel): boolean {
-    return this.normalizarTexto(proyecto.status) === 'finalizado' || Boolean((proyecto.fechaFinProyecto ?? '').trim());
-  }
-
-  abrirCrearModal(): void {
-    this.resetCreateForm();
-    this.lockBodyScroll();
-    this.showModal = true;
-  }
 
   irAPagina(pagina: number): void {
     if (pagina < 1 || pagina > this.totalPages) {
@@ -273,16 +209,9 @@ export class ProyectosListComponent implements OnInit, OnDestroy {
     this.currentPage = 1;
   }
 
-  cerrarCrearModal(): void {
-    this.showModal = false;
-    this.resetCreateForm();
-    this.restoreBodyScroll();
-  }
 
-  cerrarEditar(): void {
-    this.showEditar = false;
-    this.proyectoSeleccionado = null;
-  }
+
+
 
   actualizarLista(proyectoActualizado: ProyectoModel): void {
     this.projects = this.projects.map(proyecto =>
@@ -294,8 +223,9 @@ export class ProyectosListComponent implements OnInit, OnDestroy {
     this.cargandoProyectos = true;
     this.errorCarga = '';
     this.cd.detectChanges();
+    this.usuarioId = this.seguridadService.ObtenerDatosUsuarioIdentificadoSESION()?.usuario?.id_usuario || '';
 
-    this.proyectoService.ObtenerProyectos()
+    this.proyectoService.ObtenerProyectosPorSupervisor(this.usuarioId)
       .pipe(finalize(() => {
         this.cargandoProyectos = false;
         this.cd.detectChanges();
@@ -315,122 +245,15 @@ export class ProyectosListComponent implements OnInit, OnDestroy {
       });
   }
 
-  cargarDepartamentos(): void {
-    this.cargandoConfiguracion = true;
-    this.cd.detectChanges();
 
-    this.proyectoService.ObtenerDepartamentos()
-      .pipe(finalize(() => {
-        this.cargandoConfiguracion = false;
-        this.cd.detectChanges();
-      }))
-      .subscribe({
-        next: respuesta => {
-          this.departamentos = (respuesta.DATOS ?? []).map(departamento => ({
-            ID_DPTO: departamento.ID_DPTO,
-            NOM_DPTO: departamento.NOM_DPTO
-          }));
-          this.cd.detectChanges();
-        },
-        error: () => {
-          this.departamentos = [];
-          this.toast.danger('Error al cargar los departamentos', 'Error', 5000, true, true, true);
-          this.cd.detectChanges();
-        }
-      });
-  }
 
-  cargarSupervisores(): void {
-    this.cargandoSupervisores = true;
-    this.cd.detectChanges();
 
-    this.usuariosService.ObtenerUsuarios()
-      .pipe(finalize(() => {
-        this.cargandoSupervisores = false;
-        this.cd.detectChanges();
-      }))
-      .subscribe({
-        next: respuesta => {
-          this.supervisoresDisponibles = (respuesta.DATOS ?? []).filter(usuario => Number(usuario.rolid) === 2);
-          this.cd.detectChanges();
-        },
-        error: () => {
-          this.supervisoresDisponibles = [];
-          this.toast.danger('Error al cargar los supervisores', 'Error', 5000, true, true, true);
-          this.cd.detectChanges();
-        }
-      });
-  }
 
-  onDepartamentoCrearChange(): void {
-    const idDepartamento = this.projectForm.controls.departamento.value;
 
-    this.projectForm.controls.id_municipio.setValue('');
-    this.municipiosCrearDisponibles = [];
 
-    if (!idDepartamento) {
-      this.projectForm.controls.id_municipio.setValue('');
-      this.municipiosCrearDisponibles = [];
 
-      return;
-    }
 
-    this.proyectoService.ObtenerMunicipiosPorDepartamento(idDepartamento).subscribe({
-      next: respuesta => {
-        this.municipiosCrearDisponibles = (respuesta.DATOS ?? []).map(municipio => ({
-          ID_MUNICIPIO: municipio.ID_MUNICIPIO,
-          NOM_MUNICIPIO: municipio.NOM_MUNICIPIO
-        }));
-        this.cd.detectChanges();
-      },
-      error: () => {
-        this.municipiosCrearDisponibles = [];
-        this.toast.danger('Error al cargar los municipios', 'Error', 5000, true, true, true);
-        this.cd.detectChanges();
-      }
-    });
-  }
 
-  crearProyecto(): void {
-    if (this.projectForm.invalid) {
-      this.projectForm.markAllAsTouched();
-      this.toast.warning('Por favor complete todos los campos correctamente', 'Advertencia', 5000, true, true, true);
-      return;
-    }
-
-    const usuarioInsert = this.seguridadService.ObtenerDatosUsuarioIdentificadoSESION()?.usuario?.nombre || 'admin';
-    const idSupervisor = this.projectForm.controls.id_supervisor.value;
-    const nomProyecto = this.projectForm.controls.nom_proyecto.value;
-    const idMunicipio = this.projectForm.controls.id_municipio.value;
-    const descripcionProyecto = this.projectForm.controls.descripcion_proyecto.value;
-
-    this.proyectoService.CrearProyecto(idSupervisor, nomProyecto, idMunicipio, descripcionProyecto, usuarioInsert)
-      .subscribe({
-        next: respuesta => {
-          if (respuesta.CODIGO === 200) {
-            this.toast.success(respuesta.MENSAJE || 'Proyecto creado correctamente', 'Éxito', 5000, true, true, true);
-            this.cerrarCrearModal();
-            this.cargarProyectos();
-          } else {
-            this.toast.danger(respuesta.MENSAJE || 'No fue posible crear el proyecto', 'Error', 5000, true, true, true);
-          }
-        },
-        error: () => {
-          this.toast.danger('Error al crear el proyecto', 'Error', 5000, true, true, true);
-        }
-      });
-  }
-
-  private resetCreateForm(): void {
-    this.projectForm.reset({
-      id_supervisor: '',
-      nom_proyecto: '',
-      departamento: '',
-      id_municipio: '',
-      descripcion_proyecto: ''
-    });
-    this.municipiosCrearDisponibles = [];
-  }
 
   private mapProyectoDesdeApi(proyecto: ProyectoListaModel): ProyectoModel {
     return {

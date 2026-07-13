@@ -15,16 +15,7 @@
     <div class="flex flex-wrap items-center justify-end gap-2">
       <span class="badge" [class]="'badge ' + statusClass(proyecto.status)">{{ proyecto.status }}</span>
       <span class="badge" [class]="'badge ' + (proyecto.priority === 'Alta' ? 'badge-danger' : proyecto.priority === 'Media' ? 'badge-warning' : 'badge-neutral')">{{ proyecto.priority }}</span>
-      <button
-        type="button"
-        class="btn-primary"
-        [disabled]="proyectoFinalizado || finalizandoProyecto"
-        [class.opacity-60]="proyectoFinalizado || finalizandoProyecto"
-        [class.cursor-not-allowed]="proyectoFinalizado || finalizandoProyecto"
-        (click)="abrirModalFinalizar()"
-      >
-        {{ finalizandoProyecto ? 'Finalizando...' : 'Finalizar proyecto' }}
-      </button>
+
     </div>
   </div>
 
@@ -114,6 +105,19 @@
               <p class="text-white font-medium mt-2">{{ prestamo.fechaDevolucion || 'Pendiente' }}</p>
             </div>
           </div>
+
+          <div class="pt-1">
+            <button
+              type="button"
+              class="btn-primary w-full"
+              [disabled]="!puedeDevolverPrestamo(prestamo)"
+              [class.opacity-60]="!puedeDevolverPrestamo(prestamo)"
+              [class.cursor-not-allowed]="!puedeDevolverPrestamo(prestamo)"
+              (click)="abrirModalDevolverPrestamo(prestamo)"
+            >
+              Devolver préstamo de broca
+            </button>
+          </div>
         </div>
       </div>
 
@@ -124,9 +128,21 @@
       </ng-template>
     </div>
 
-    <div class="flex items-center justify-between">
-      <h3 class="text-xl font-bold text-white font-display">Perforaciones asignadas</h3>
-      <span class="text-sm text-slate-400">{{ proyecto.perforaciones.length }} registros</span>
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-3">
+        <h3 class="text-xl font-bold text-white font-display">Perforaciones asignadas</h3>
+        <span class="text-sm text-slate-400">{{ proyecto.perforaciones.length }} registros</span>
+      </div>
+      <button
+        type="button"
+        class="btn-primary"
+        [disabled]="proyectoFinalizado"
+        [class.opacity-60]="proyectoFinalizado"
+        [class.cursor-not-allowed]="proyectoFinalizado"
+        (click)="abrirModalCrearPerforacion()"
+      >
+        Agregar perforación
+      </button>
     </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -136,7 +152,17 @@
             <h4 class="text-lg font-semibold text-white">{{ perforacion.nombrePerforacion }}</h4>
             <p class="text-slate-400 text-sm mt-1">{{ perforacion.idPerforacion }} · {{ perforacion.estado }}</p>
           </div>
-          <span class="badge badge-neutral">{{ perforacion.supervisor }}</span>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-200 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+              [disabled]="!puedeEliminarPerforacion(perforacion)"
+              (click)="abrirModalEliminarPerforacion(perforacion)"
+            >
+              Eliminar perforación
+            </button>
+            <span class="badge badge-neutral">{{ perforacion.supervisor }}</span>
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3 text-sm">
@@ -242,8 +268,18 @@
 
         <div>
           <div class="flex items-center justify-between mb-3">
-            <p class="text-sm font-semibold text-white">Historial de movimiento de brocas</p>
-            <span class="text-xs text-slate-500">Entradas, salidas y metros perforados</span>
+            <div>
+              <p class="text-sm font-semibold text-white">Historial de movimiento de brocas</p>
+              <span class="text-xs text-slate-500">Entradas, salidas y metros perforados</span>
+            </div>
+            <button
+              type="button"
+              class="rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-xs font-medium text-blue-200 transition hover:bg-blue-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+              [disabled]="proyectoFinalizado || !brocasDisponiblesParaMovimiento.length"
+              (click)="abrirModalRegistrarMovimiento(perforacion)"
+            >
+              Registrar movimiento de broca
+            </button>
           </div>
 
           <div *ngIf="perforacion.historialMovimientoBrocas.length; else sinHistorial" class="space-y-3">
@@ -275,6 +311,162 @@
 </div>
 </ng-container>
 
+<div
+  *ngIf="mostrarModalDevolverPrestamo"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-3 sm:p-4"
+  (click)="cerrarModalDevolverPrestamo()"
+>
+  <div class="card w-full max-w-xl p-6 space-y-5 shadow-2xl animate-slide-up" (click)="$event.stopPropagation()">
+    <div class="space-y-2">
+      <h3 class="text-xl font-bold text-white font-display">Confirmar devolución de broca</h3>
+      <p class="text-sm text-slate-300">
+        Vas a devolver el préstamo de la broca <span class="font-semibold text-white">{{ prestamoSeleccionado?.nombreBroca }}</span>
+        con serial <span class="font-semibold text-white">{{ prestamoSeleccionado?.serialBroca }}</span>.
+      </p>
+      <p class="text-sm text-slate-400 leading-relaxed">
+        Una vez devuelta, esta broca no podrá registrar más movimientos dentro del proyecto.
+      </p>
+    </div>
+
+    <div class="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+      Esta acción afectará el seguimiento de movimientos de brocas para este proyecto.
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-3">
+      <button type="button" class="btn-secondary flex-1" [disabled]="devolviendoPrestamo" (click)="cerrarModalDevolverPrestamo()">Cancelar</button>
+      <button type="button" class="btn-primary flex-1" [disabled]="devolviendoPrestamo" (click)="confirmarDevolverPrestamo()">
+        {{ devolviendoPrestamo ? 'Devolviendo...' : 'Confirmar devolución' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="mostrarModalCrearPerforacion"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-3 sm:p-4"
+  (click)="cerrarModalCrearPerforacion()"
+>
+  <div class="card w-full max-w-2xl p-6 space-y-5 shadow-2xl animate-slide-up" (click)="$event.stopPropagation()">
+    <div class="space-y-2">
+      <h3 class="text-xl font-bold text-white font-display">Agregar perforación</h3>
+      <p class="text-sm text-slate-400">Completa los datos para crear una nueva perforación en este proyecto.</p>
+    </div>
+
+    <form [formGroup]="crearPerforacionForm" (ngSubmit)="crearPerforacion()" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-300 mb-1.5">Nombre de la perforación</label>
+        <input formControlName="nombre_perforacion" type="text" class="input-field" placeholder="Ej. Perforación Norte 01" />
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Profundidad objetivo (m)</label>
+          <input formControlName="profundidad_objetivo" type="number" min="0" class="input-field" />
+          <p class="mt-1 text-xs text-slate-500">Si aún no conoces la profundidad objetivo, puedes dejarla en 0.</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Profundidad actual (m)</label>
+          <input formControlName="profundidad_actual" type="number" min="0" class="input-field" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Fecha inicio</label>
+          <input formControlName="fecha_inicio_perforacion" type="date" class="input-field" />
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 pt-2">
+        <button type="button" class="btn-secondary flex-1" [disabled]="creandoPerforacion" (click)="cerrarModalCrearPerforacion()">Cancelar</button>
+        <button type="submit" class="btn-primary flex-1" [disabled]="creandoPerforacion">
+          {{ creandoPerforacion ? 'Creando...' : 'Crear perforación' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div
+  *ngIf="mostrarModalEliminarPerforacion"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-3 sm:p-4"
+  (click)="cerrarModalEliminarPerforacion()"
+>
+  <div class="card w-full max-w-lg p-6 space-y-5 shadow-2xl animate-slide-up" (click)="$event.stopPropagation()">
+    <div class="space-y-2">
+      <h3 class="text-xl font-bold text-white font-display">Eliminar perforación</h3>
+      <p class="text-sm text-slate-300">
+        Vas a eliminar la perforación <span class="font-semibold text-white">{{ perforacionSeleccionada?.nombrePerforacion }}</span>.
+      </p>
+      <p class="text-sm text-slate-400">Esta acción no se puede deshacer.</p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-3">
+      <button type="button" class="btn-secondary flex-1" [disabled]="eliminandoPerforacion" (click)="cerrarModalEliminarPerforacion()">Cancelar</button>
+      <button type="button" class="flex-1 rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60" [disabled]="eliminandoPerforacion" (click)="confirmarEliminarPerforacion()">
+        {{ eliminandoPerforacion ? 'Eliminando...' : 'Sí, eliminar' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="mostrarModalRegistrarMovimiento"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-3 sm:p-4"
+  (click)="cerrarModalRegistrarMovimiento()"
+>
+  <div class="card w-full max-w-2xl p-6 space-y-5 shadow-2xl animate-slide-up" (click)="$event.stopPropagation()">
+    <div class="space-y-2">
+      <h3 class="text-xl font-bold text-white font-display">Registrar movimiento de broca</h3>
+      <p class="text-sm text-slate-400">Perforación: {{ perforacionSeleccionada?.nombrePerforacion }}</p>
+    </div>
+
+    <form [formGroup]="registrarMovimientoForm" (ngSubmit)="registrarMovimientoBroca()" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Broca</label>
+          <select formControlName="id_broca_instanciada" class="input-field">
+            <option value="">Seleccione una broca</option>
+            <option *ngFor="let broca of brocasDisponiblesParaMovimiento" [value]="broca.serialBroca">
+              {{ broca.nombreBroca }} · {{ broca.serialBroca }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Tipo de movimiento</label>
+          <select formControlName="tipo_movimiento" class="input-field">
+            <option value="ENTRADA">ENTRADA</option>
+            <option value="SALIDA">SALIDA</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Profundidad movimiento (m)</label>
+          <input formControlName="profundidad_movimiento" type="number" min="0" class="input-field" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Fecha y hora</label>
+          <input formControlName="fecha_movimiento" type="datetime-local" class="input-field" [attr.max]="fechaHoraMovimientoMax" />
+          <p *ngIf="registrarMovimientoForm.controls.fecha_movimiento.touched && registrarMovimientoForm.controls.fecha_movimiento.errors?.['futureDate']" class="mt-1 text-xs text-red-300">
+            La fecha y hora del movimiento no puede ser futura.
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-300 mb-1.5">Observaciones</label>
+        <textarea formControlName="observaciones" rows="3" class="input-field resize-none" placeholder="Detalle del movimiento"></textarea>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 pt-2">
+        <button type="button" class="btn-secondary flex-1" [disabled]="registrandoMovimiento" (click)="cerrarModalRegistrarMovimiento()">Cancelar</button>
+        <button type="submit" class="btn-primary flex-1" [disabled]="registrandoMovimiento">
+          {{ registrandoMovimiento ? 'Registrando...' : 'Registrar movimiento' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <ng-template #loadingProyecto>
   <div class="card p-8 text-center text-slate-400">
     Cargando proyecto desde la base de datos...
@@ -289,31 +481,4 @@
   </div>
 </ng-template>
 
-<div
-  *ngIf="mostrarModalFinalizar"
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-3 sm:p-4"
-  (click)="cerrarModalFinalizar()"
->
-  <div class="card w-full max-w-xl p-6 space-y-5 shadow-2xl animate-slide-up" (click)="$event.stopPropagation()">
-    <div class="space-y-2">
-      <h3 class="text-xl font-bold text-white font-display">Finalizar proyecto</h3>
-      <p class="text-sm text-slate-300">
-        Esta acción marcará el proyecto como <span class="font-semibold text-white">FINALIZADO</span>.
-      </p>
-      <p class="text-sm text-slate-400 leading-relaxed">
-        Si continúas, el supervisor ya no podrá agregar más actualizaciones al proyecto, el proyecto no podrá volver a modificarse y quedará registrada la fecha de finalización.
-      </p>
-    </div>
 
-    <div class="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
-      Verifica esta decisión antes de continuar. Después de finalizarlo, las acciones de actualización quedarán deshabilitadas.
-    </div>
-
-    <div class="flex flex-col sm:flex-row gap-3">
-      <button type="button" class="btn-secondary flex-1" [disabled]="finalizandoProyecto" (click)="cerrarModalFinalizar()">Cancelar</button>
-      <button type="button" class="btn-primary flex-1" [disabled]="finalizandoProyecto" (click)="finalizarProyecto()">
-        {{ finalizandoProyecto ? 'Finalizando...' : 'Sí, finalizar proyecto' }}
-      </button>
-    </div>
-  </div>
-</div>

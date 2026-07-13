@@ -1,11 +1,13 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NgToastService } from 'ng-angular-popup';
 import { ProyectoModel } from '../../../../../Modelos/proyecto.model';
 import { ProyectoListaModel } from '../../../../../Modelos/ProyectosLista.model';
 import { ModeloBrcoaPrestada } from '../../../../../Modelos/ModeloBrcoaPrestada';
 import { PerforacionModel as BackendPerforacionModel } from '../../../../../Modelos/PerforacionModel';
 import { MovimientoBrocaModel as BackendMovimientoBrocaModel } from '../../../../../Modelos/MovimientoBroca.model';
 import { ProyectoService } from '../../../../../servicios/proyecto.service';
+import { SeguridadService } from '../../../../../servicios/seguridad';
 
 interface MovimientoGraficaPunto {
   x: number;
@@ -52,6 +54,8 @@ export class ProyectoDetallePageComponent implements OnInit {
   proyecto: ProyectoModel | null = null;
   cargandoProyecto = false;
   cargandoBrocasPrestadas = false;
+  finalizandoProyecto = false;
+  mostrarModalFinalizar = false;
   brocasPrestadas: BrocaPrestadaViewModel[] = [];
   private idProyecto: string | null = null;
   private readonly chartWidth = 1000;
@@ -65,6 +69,8 @@ export class ProyectoDetallePageComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private proyectoService: ProyectoService,
+    private seguridadService: SeguridadService,
+    private toast: NgToastService,
     private cd: ChangeDetectorRef
   ) {}
 
@@ -75,6 +81,92 @@ export class ProyectoDetallePageComponent implements OnInit {
 
   volver(): void {
     this.router.navigate(['/dashboard/proyectos']);
+  }
+
+  get proyectoFinalizado(): boolean {
+    if (!this.proyecto) {
+      return false;
+    }
+
+    return this.esProyectoFinalizado(this.proyecto.status, this.proyecto.fechaFinProyecto);
+  }
+
+  abrirModalFinalizar(): void {
+    if (!this.proyecto || this.proyectoFinalizado || this.finalizandoProyecto) {
+      return;
+    }
+
+    this.mostrarModalFinalizar = true;
+  }
+
+  cerrarModalFinalizar(): void {
+    if (this.finalizandoProyecto) {
+      return;
+    }
+
+    this.mostrarModalFinalizar = false;
+  }
+
+  finalizarProyecto(): void {
+    if (!this.proyecto || this.proyectoFinalizado || this.finalizandoProyecto) {
+      return;
+    }
+
+    const sesion = this.seguridadService.ObtenerDatosUsuarioIdentificadoSESION();
+    const idUsuario = sesion?.usuario?.id_usuario;
+
+    if (!idUsuario) {
+      this.toast.danger('No fue posible identificar al usuario actual para finalizar el proyecto.', 'Error', 5000, true, true, true);
+      return;
+    }
+
+    this.finalizandoProyecto = true;
+    this.cd.detectChanges();
+    let idProyectoNum: number;
+    try {
+      idProyectoNum = Number(this.proyecto.idProyecto);
+    } catch (error) {
+      this.toast.danger('El ID del proyecto no es válido para finalizarlo.', 'Error', 5000, true, true, true);
+      this.finalizandoProyecto = false;
+      this.cd.detectChanges();
+      return;
+    }
+
+    this.proyectoService.FinalizarProyecto(idProyectoNum, idUsuario).subscribe({
+      next: respuesta => {
+        if (respuesta?.CODIGO !== 200) {
+          this.toast.danger(respuesta?.MENSAJE ?? 'No fue posible finalizar el proyecto.', 'Error', 5000, true, true, true);
+          this.finalizandoProyecto = false;
+          this.cd.detectChanges();
+          return;
+        }
+
+        const fechaFinalizacion = new Date().toISOString().slice(0, 10);
+        const proyectoActual = this.proyecto;
+
+        if (!proyectoActual) {
+          this.finalizandoProyecto = false;
+          this.mostrarModalFinalizar = false;
+          this.cd.detectChanges();
+          return;
+        }
+
+        this.proyecto = {
+          ...proyectoActual,
+          status: 'FINALIZADO',
+          fechaFinProyecto: proyectoActual.fechaFinProyecto || fechaFinalizacion
+        };
+        this.mostrarModalFinalizar = false;
+        this.finalizandoProyecto = false;
+        this.toast.success('El proyecto fue finalizado correctamente.', 'Proyecto finalizado', 5000, true, true, true);
+        this.cd.detectChanges();
+      },
+      error: () => {
+        this.finalizandoProyecto = false;
+        this.toast.danger('Ocurrió un error al finalizar el proyecto.', 'Error', 5000, true, true, true);
+        this.cd.detectChanges();
+      }
+    });
   }
 
   colorClass(color: string): string {
@@ -104,6 +196,16 @@ export class ProyectoDetallePageComponent implements OnInit {
 
     if (valor === 'disponible') return 'badge-success';
     if (valor === 'devuelto') return 'badge-info';
+    return 'badge-neutral';
+  }
+
+  statusClass(estado: string): string {
+    const valor = this.normalizarTexto(estado);
+
+    if (valor === 'completado' || valor === 'finalizado') return 'badge-success';
+    if (valor === 'completando') return 'badge-info';
+    if (valor === 'iniciado') return 'badge-info';
+    if (valor === 'en curso' || valor === 'en_curso') return 'badge-warning';
     return 'badge-neutral';
   }
 
@@ -153,13 +255,17 @@ export class ProyectoDetallePageComponent implements OnInit {
   private mapProyectoDesdeApi(proyecto: ProyectoListaModel): ProyectoModel {
     return {
       idProyecto: String(proyecto.ID_PROYECTO ?? ''),
+      idSupervisor: proyecto.ID_SUPERVISOR ?? '',
+      idDepartamento: proyecto.ID_DPTO ?? '',
+      idMunicipio: proyecto.ID_MUNICIPIO ?? '',
       nombreSupervisor: proyecto.NOM_SUPERVISOR ?? '',
       nombreProyecto: proyecto.NOM_PROYECTO ?? '',
       departamento: proyecto.NOM_DEPARTAMENTO ?? '',
       municipio: proyecto.NOM_MUNICIPIO ?? '',
       descripcionProyecto: proyecto.DESCRIPCION_PROYECTO ?? '',
       fechaCreacion: this.formatearFecha(proyecto.FECHA_CREACION),
-      status: proyecto.ESTADO_PROYECTO ?? 'Nuevo',
+      fechaFinProyecto: this.formatearFecha(proyecto.FECHA_FIN_PROYECTO),
+      status: this.mapEstadoProyectoDesdeApi(proyecto.ESTADO_PROYECTO),
       priority: proyecto.PRIORIDAD_PROYECTO ?? 'Media',
       color: proyecto.COLOR ?? 'blue',
       perforaciones: (proyecto.PERFORACIONES ?? []).map(perforacion => this.mapPerforacionDesdeApi(perforacion))
@@ -234,6 +340,20 @@ export class ProyectoDetallePageComponent implements OnInit {
 
   private normalizarTexto(valor: string | undefined | null): string {
     return (valor ?? '').trim().toLowerCase();
+  }
+
+  private mapEstadoProyectoDesdeApi(estado: string | undefined): string {
+    const valor = this.normalizarTexto(estado).replace(/\s+/g, '_');
+
+    if (valor === 'iniciado') return 'Iniciado';
+    if (valor === 'en_curso') return 'En curso';
+    if (valor === 'finalizado') return 'FINALIZADO';
+
+    return estado ?? 'Nuevo';
+  }
+
+  private esProyectoFinalizado(estado: string | undefined | null, fechaFinProyecto: string | undefined | null): boolean {
+    return this.normalizarTexto(estado) === 'finalizado' || Boolean((fechaFinProyecto ?? '').trim());
   }
 
   getMovimientoGrafica(perforacion: ProyectoModel['perforaciones'][number]): MovimientoGraficaData {
