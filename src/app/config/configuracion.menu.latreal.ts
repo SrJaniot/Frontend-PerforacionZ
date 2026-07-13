@@ -21,6 +21,12 @@ export namespace ConfiguracionMenuLateral {
 
       },
       {
+        menuid: 6,
+        ruta: '/dashboard/misproyectos',
+        icono:"folder",
+        texto:"Mis proyectos"
+      },
+      {
         menuid: 4,
         ruta: '/dashboard/inventario',
         icono:"drill",

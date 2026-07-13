@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { SeguridadService } from '../../../../servicios/seguridad';
 import { ItemMenuModel } from '../../../../Modelos/item.menu.model';
@@ -25,59 +25,60 @@ interface NavGroup {
 export class SidebarComponent {
   @Input() isOpen = true;
   @Output() toggleSidebar = new EventEmitter<void>();
+
   navGroups: NavGroup[] = [];
   listaMenus: ItemMenuModel[] = [];
 
-  nombreUsuario: string = '';
-  PrimerasLetrasNombre: string = '';
-  roleUsuario: string = '';
-
+  nombreUsuario = '';
+  PrimerasLetrasNombre = '';
+  roleUsuario = '';
+  roleIdUsuario: number | null = null;
 
   constructor(
     private router: Router,
-    private servicioSeguridad: SeguridadService,
+    private servicioSeguridad: SeguridadService
+  ) {}
 
-
-  ) { }
-
-  ngOnInit() {
-    //obtener datos del usuario activo en la sesion
-    // aqui capturamos los datos del usuario activo en la sesion
+  ngOnInit(): void {
     const usuarioActivo = this.servicioSeguridad.ObtenerDatosUsuarioIdentificadoSESION();
-    this.servicioSeguridad.ObtenerRolUsuario().subscribe(
-      (datos) => {
-        console.log(datos);
-        this.roleUsuario = datos.DATOS?.nombre_rol!;
+    this.listaMenus = this.servicioSeguridad.ObtenerItemMenuLateral();
+
+    this.servicioSeguridad.ObtenerRolUsuario().subscribe({
+      next: datos => {
+        this.roleUsuario = datos.DATOS?.nombre_rol ?? '';
+        this.roleIdUsuario = Number(datos.DATOS?.rol ?? null);
+        this.reconstruirNavegacion();
       },
-      (error) => {
+      error: error => {
         console.log(error);
-        //this.toast.error({detail:"Error al obtener el rol del usuario",summary:"Error",duration:5000, position:'topCenter'});
         console.log('Error al obtener el rol del usuario');
+        this.reconstruirNavegacion();
       }
-    );
+    });
 
     console.log('Usuario activo en la sesión:', usuarioActivo);
-    //capturar nombre del usuario activo
     if (usuarioActivo && usuarioActivo.usuario) {
       this.nombreUsuario = usuarioActivo.usuario.nombre || '';
-      //capturar las primeras letras del nombre del usuario activo
       this.PrimerasLetrasNombre = this.nombreUsuario.split(' ').map(n => n[0]).join('').toUpperCase();
     }
 
+    this.reconstruirNavegacion();
+  }
 
-
-
-
-
-
-    // obtener los items del menu lateral -----------------------------------------
-    this.listaMenus = this.servicioSeguridad.ObtenerItemMenuLateral();
-
+  private reconstruirNavegacion(): void {
     const itemsGestion: NavItem[] = this.listaMenus.map(menu => ({
-      label: menu.texto!,
-      icon: menu.icono!,
-      route: menu.ruta!
+      label: menu.texto ?? '',
+      icon: menu.icono ?? '',
+      route: menu.ruta ?? ''
     }));
+
+    if (this.roleIdUsuario === 2 && !itemsGestion.some(item => item.route === '/dashboard/misproyectos')) {
+      itemsGestion.push({
+        label: 'Mis proyectos',
+        icon: 'folder',
+        route: '/dashboard/misproyectos'
+      });
+    }
 
     this.navGroups = [
       {
@@ -97,18 +98,9 @@ export class SidebarComponent {
         ]
       }
     ];
-
-    console.log(this.navGroups);
   }
 
-
-
-
-
-  // metodo cerrar sesion
-  cerrarSesion() {
-    // Aquí puedes agregar la lógica para cerrar sesión, como limpiar tokens, redirigir al login, etc.
+  cerrarSesion(): void {
     this.router.navigate(['/seguridad/cerrar-sesion']);
-
   }
 }

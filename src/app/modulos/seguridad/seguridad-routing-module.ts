@@ -9,7 +9,7 @@ const routes: Routes = [
   {
     path: 'login',
     component: Login,
-    canActivate: [ValidarSesionInactivaGuard]
+    //canActivate: [ValidarSesionInactivaGuard]
 
 
   },

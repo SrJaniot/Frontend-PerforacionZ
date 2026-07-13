@@ -9,7 +9,7 @@ const routes: Routes = [
     {
     path: '',
     component: DashboardLayoutComponent,
-    canActivate:[ValidarSesionActivaGuard],
+    //canActivate:[ValidarSesionActivaGuard],
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', component: HomeComponent },
@@ -23,6 +23,11 @@ const routes: Routes = [
         loadChildren: () =>
           import('./pages/proyectos/proyectos.module').then(m => m.ProyectosModule)
       },
+        {
+          path: 'misproyectos',
+          loadChildren: () =>
+            import('./pages/mis-proyectos/mis-proyectos.module').then(m => m.MisProyectosModule)
+        },
       {
         path: 'inventario',
         loadChildren: () =>
