@@ -1,11 +1,6 @@
 export namespace ConfiguracionMenuLateral {
     export const listaMenus =[
-      {
-        menuid: 1,
-        ruta: '/dashboard/admin',
-        icono:"admin",
-        texto:"Admin"
-      },
+     
       {
         menuid: 2,
         ruta: '/dashboard/usuarios',

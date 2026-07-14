@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
 import { DashboardLayoutComponent } from './layout/dashboard-layout.component';
 import { ValidarSesionActivaGuard } from '../../guardianes/validar-sesion-activa.guard';
+import { ValidarAdminGuard } from '../../guardianes/validar-admin.guard';
 
 const routes: Routes = [
 
@@ -35,6 +36,7 @@ const routes: Routes = [
       },
       {
         path: 'estadisticas',
+        canActivate: [ValidarAdminGuard],
         loadChildren: () =>
           import('./pages/estadisticas/estadisticas.module').then(m => m.EstadisticasModule)
       }

@@ -97,7 +97,7 @@ export class SeguridadService {
     let datosLS= localStorage.getItem('datosSesion');
     if (datosLS){
       console.log('Ya existe un usuario identificado');
-      
+
       //manda a /seguridad/cerrar-sesion para cerrar la sesion del usuario anterior y luego almacenar el nuevo usuario
       this.router.navigate(['/seguridad/cerrar-sesion']);
 
@@ -206,26 +206,26 @@ validacionDeSesion(): boolean{
 }
 
 validarAdmin(): boolean{
-  let datosLS = localStorage.getItem('datosSesion');
-  console.log('Validando si el usuario es admin...');
-  console.log('Datos de sesión:', datosLS);
-  if (datosLS) {
-    let objUsuario= JSON.parse(datosLS);
-    console.log('ROL DEL USUARIO:',objUsuario);
-    console.log('ROL DEL USUARIO:',objUsuario.usuario.rolid);
-    console.log('ROL DEL USUARIO:',objUsuario.usuario.rolid);
-    console.log('ROL DEL USUARIO:',objUsuario.usuario.rolid);
+  return this.obtenerRolIdActual() === 1;
+}
 
-    console.log('Comparación con "1":', objUsuario.usuario.rolid === '1');
-
-    if (objUsuario.usuario.rolid === 1 || objUsuario.usuario.rolid === '1') {
-      return true;
-    }else{
-      return false;
-    }
-  } else {
-    return false;
+obtenerRolIdActual(): number | null {
+  const datosLS = localStorage.getItem('datosSesion');
+  if (!datosLS) {
+    return null;
   }
+
+  try {
+    const objUsuario = JSON.parse(datosLS);
+    const rol = Number(objUsuario?.usuario?.rolid);
+    return Number.isNaN(rol) ? null : rol;
+  } catch {
+    return null;
+  }
+}
+
+esSupervisor(): boolean {
+  return this.obtenerRolIdActual() === 2;
 }
 
 

@@ -31,6 +31,7 @@ export class SidebarComponent {
   nombreUsuario: string = '';
   PrimerasLetrasNombre: string = '';
   roleUsuario: string = '';
+  esSupervisor = false;
 
 
   constructor(
@@ -41,6 +42,8 @@ export class SidebarComponent {
   ) { }
 
   ngOnInit() {
+      this.esSupervisor = this.servicioSeguridad.esSupervisor();
+
     //obtener datos del usuario activo en la sesion
     // aqui capturamos los datos del usuario activo en la sesion
     const usuarioActivo = this.servicioSeguridad.ObtenerDatosUsuarioIdentificadoSESION();
@@ -73,13 +76,15 @@ export class SidebarComponent {
     // obtener los items del menu lateral -----------------------------------------
     this.listaMenus = this.servicioSeguridad.ObtenerItemMenuLateral();
 
-    const itemsGestion: NavItem[] = this.listaMenus.map(menu => ({
+    const itemsGestion: NavItem[] = this.listaMenus
+      .filter((menu) => menu.ruta !== '/dashboard/estadisticas')
+      .map(menu => ({
       label: menu.texto!,
       icon: menu.icono!,
       route: menu.ruta!
-    }));
+      }));
 
-    this.navGroups = [
+    const grupos: NavGroup[] = [
       {
         title: 'Principal',
         items: [
@@ -89,14 +94,19 @@ export class SidebarComponent {
       {
         title: 'Gestión',
         items: itemsGestion
-      },
-      {
+      }
+    ];
+
+    if (!this.esSupervisor) {
+      grupos.push({
         title: 'Análisis',
         items: [
           { label: 'Estadísticas', icon: 'bar-chart', route: '/dashboard/estadisticas' }
         ]
-      }
-    ];
+      });
+    }
+
+    this.navGroups = grupos;
 
     console.log(this.navGroups);
   }

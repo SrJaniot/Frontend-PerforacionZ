@@ -1,10 +1,13 @@
 <div class="animate-fade-in space-y-6">
 
-  <!-- Page Header -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
     <div>
-      <h2 class="text-2xl font-bold text-white font-display">Dashboard</h2>
-      <p class="text-slate-400 text-sm mt-1">Bienvenido de vuelta, Admin. Aquí tienes el resumen del día.</p>
+      <h2 class="text-2xl font-bold text-white font-display">Centro de Operaciones</h2>
+      @if (esSupervisor) {
+        <p class="text-slate-400 text-sm mt-1">Vista de supervisor: seguimiento operativo de tus proyectos y recursos.</p>
+      } @else {
+        <p class="text-slate-400 text-sm mt-1">Vista administrativa: estado general de operación, recursos y gestión.</p>
+      }
     </div>
     <div class="flex items-center gap-2 text-sm text-slate-400 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2">
       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -14,20 +17,40 @@
     </div>
   </div>
 
-  <!-- Stats Grid -->
+  <div class="card p-5 border-blue-600/20 bg-gradient-to-r from-slate-900 via-slate-900 to-blue-950/20">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <p class="text-xs uppercase tracking-wider text-slate-500">Estado del turno</p>
+        @if (esSupervisor) {
+          <h3 class="text-lg font-semibold text-white mt-1">Prioriza avance de campo y disponibilidad de brocas</h3>
+          <p class="text-sm text-slate-400 mt-1">Recuerda validar movimientos pendientes y actualizar profundidad actual en cada perforación.</p>
+        } @else {
+          <h3 class="text-lg font-semibold text-white mt-1">Monitorea productividad, inventario y uso de recursos</h3>
+          <p class="text-sm text-slate-400 mt-1">Desde aqui puedes tomar decisiones de asignación y priorizar proyectos críticos.</p>
+        }
+      </div>
+      @if (!esSupervisor) {
+        <button type="button" (click)="irASeguimientoAdmin()" class="btn-secondary text-sm">Ir a seguimiento</button>
+      }
+    </div>
+  </div>
+
+  @if (cargando) {
+    <div class="card p-5 text-sm text-slate-400">Cargando información real del sistema...</div>
+  }
+
+  @if (errorCarga) {
+    <div class="card p-5 text-sm text-red-200 border border-red-500/30 bg-red-500/10">{{ errorCarga }}</div>
+  }
+
   <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-    <div *ngFor="let s of stats" class="card p-5 hover:border-slate-600 transition-all duration-200">
+    @for (s of statsVisibles; track s.label) {
+    <div class="card p-5 hover:border-slate-600 transition-all duration-200">
       <div class="flex items-start justify-between">
         <div>
           <p class="text-slate-400 text-sm">{{ s.label }}</p>
           <p class="text-2xl font-bold text-white font-display mt-1">{{ s.value }}</p>
-          <div class="flex items-center gap-1 mt-2">
-            <svg class="w-3.5 h-3.5" [class.text-emerald-400]="s.up" [class.text-red-400]="!s.up" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="s.up ? 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' : 'M13 17h8m0 0V9m0 8l-8-8-4 4-6-6'" />
-            </svg>
-            <span class="text-xs font-medium" [class.text-emerald-400]="s.up" [class.text-red-400]="!s.up">{{ s.change }}</span>
-            <span class="text-slate-500 text-xs">vs mes anterior</span>
-          </div>
+          <p class="text-xs text-slate-500 mt-2">{{ s.helper }}</p>
         </div>
         <div class="w-11 h-11 rounded-2xl flex items-center justify-center"
           [class.bg-blue-600/20]="s.color==='blue'"
@@ -44,23 +67,23 @@
             <path *ngIf="s.icon==='briefcase'" stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             <path *ngIf="s.icon==='package'" stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             <path *ngIf="s.icon==='dollar'" stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <path *ngIf="s.icon==='check'" stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
       </div>
     </div>
+    }
   </div>
 
-  <!-- Lower Grid -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-    <!-- Recent Activity -->
     <div class="card lg:col-span-1 p-5">
       <div class="flex items-center justify-between mb-4">
         <h3 class="font-semibold text-white font-display">Actividad Reciente</h3>
-        <a href="#" class="text-xs text-blue-400 hover:text-blue-300">Ver todo</a>
+        <span class="text-xs text-slate-500">Tiempo real</span>
       </div>
       <div class="space-y-4">
-        <div *ngFor="let a of recentActivity" class="flex items-start gap-3">
+        @for (a of recentActivity; track a.time) {
+        <div class="flex items-start gap-3">
           <div class="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 shrink-0">
             {{ a.avatar }}
           </div>
@@ -73,17 +96,26 @@
             <p class="text-xs text-slate-500 mt-0.5">{{ a.time }}</p>
           </div>
         </div>
+        }
+        @if (recentActivity.length === 0) {
+          <p class="text-sm text-slate-500">No hay actividad reciente para mostrar.</p>
+        }
       </div>
     </div>
 
-    <!-- Top Projects -->
     <div class="card lg:col-span-2 p-5">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="font-semibold text-white font-display">Proyectos Activos</h3>
-        <a routerLink="/dashboard/proyectos" class="text-xs text-blue-400 hover:text-blue-300">Ver todos</a>
+        @if (esSupervisor) {
+          <h3 class="font-semibold text-white font-display">Seguimiento de mis proyectos</h3>
+          <button type="button" (click)="irAVerTodosProyectos()" class="text-xs text-blue-400 hover:text-blue-300">Ver todos</button>
+        } @else {
+          <h3 class="font-semibold text-white font-display">Proyectos activos</h3>
+          <button type="button" (click)="irAVerTodosProyectos()" class="text-xs text-blue-400 hover:text-blue-300">Ver todos</button>
+        }
       </div>
       <div class="space-y-4">
-        <div *ngFor="let p of topProjects" class="space-y-2">
+        @for (p of topProjects; track p.name) {
+        <div class="space-y-2">
           <div class="flex items-center justify-between">
             <span class="text-sm font-medium text-slate-200">{{ p.name }}</span>
             <div class="flex items-center gap-2">
@@ -93,49 +125,46 @@
                 [class.badge-info]="p.statusType==='info'">
                 {{ p.status }}
               </span>
-              <span class="text-sm font-mono text-slate-400">{{ p.progress }}%</span>
-            </div>
-          </div>
-          <div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
-            <div class="h-full rounded-full transition-all duration-700"
-              [class.bg-blue-500]="p.statusType==='info'"
-              [class.bg-amber-500]="p.statusType==='warning'"
-              [class.bg-emerald-500]="p.statusType==='success'"
-              [style.width.%]="p.progress">
+              <span class="text-xs font-mono text-slate-400">Movimientos: {{ p.movimientos }}</span>
             </div>
           </div>
         </div>
+        }
+        @if (topProjects.length === 0) {
+          <p class="text-sm text-slate-500">No hay proyectos disponibles.</p>
+        }
       </div>
     </div>
 
   </div>
 
-  <!-- Quick links -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-    <a routerLink="/dashboard/usuarios" class="card p-4 flex items-center gap-3 hover:border-blue-600/50 hover:bg-blue-600/5 transition-all duration-200 cursor-pointer">
-      <div class="w-9 h-9 rounded-xl bg-blue-600/20 flex items-center justify-center shrink-0">
-        <svg class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+    @for (accion of accionesVisibles; track accion.title) {
+    <a [attr.href]="accion.route" (click)="navegarAccion(accion.route, $event)" class="card p-4 flex items-center gap-3 transition-all duration-200 cursor-pointer"
+      [class.hover:border-blue-600/50]="accion.color==='blue'"
+      [class.hover:bg-blue-600/5]="accion.color==='blue'"
+      [class.hover:border-emerald-600/50]="accion.color==='emerald'"
+      [class.hover:bg-emerald-600/5]="accion.color==='emerald'"
+      [class.hover:border-amber-600/50]="accion.color==='amber'"
+      [class.hover:bg-amber-600/5]="accion.color==='amber'"
+      [class.hover:border-cyan-600/50]="accion.color==='cyan'"
+      [class.hover:bg-cyan-600/5]="accion.color==='cyan'">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+        [class.bg-blue-600/20]="accion.color==='blue'"
+        [class.bg-emerald-600/20]="accion.color==='emerald'"
+        [class.bg-amber-600/20]="accion.color==='amber'"
+        [class.bg-cyan-600/20]="accion.color==='cyan'">
+        <svg *ngIf="accion.icon==='users'" class="w-4 h-4" [class.text-blue-400]="accion.color==='blue'" [class.text-emerald-400]="accion.color==='emerald'" [class.text-amber-400]="accion.color==='amber'" [class.text-cyan-400]="accion.color==='cyan'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+        <svg *ngIf="accion.icon==='briefcase'" class="w-4 h-4" [class.text-blue-400]="accion.color==='blue'" [class.text-emerald-400]="accion.color==='emerald'" [class.text-amber-400]="accion.color==='amber'" [class.text-cyan-400]="accion.color==='cyan'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+        <svg *ngIf="accion.icon==='package'" class="w-4 h-4" [class.text-blue-400]="accion.color==='blue'" [class.text-emerald-400]="accion.color==='emerald'" [class.text-amber-400]="accion.color==='amber'" [class.text-cyan-400]="accion.color==='cyan'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+        <svg *ngIf="accion.icon==='chart'" class="w-4 h-4" [class.text-blue-400]="accion.color==='blue'" [class.text-emerald-400]="accion.color==='emerald'" [class.text-amber-400]="accion.color==='amber'" [class.text-cyan-400]="accion.color==='cyan'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
       </div>
-      <span class="text-sm font-medium text-slate-300">Usuarios</span>
-    </a>
-    <a routerLink="/dashboard/proyectos" class="card p-4 flex items-center gap-3 hover:border-emerald-600/50 hover:bg-emerald-600/5 transition-all duration-200 cursor-pointer">
-      <div class="w-9 h-9 rounded-xl bg-emerald-600/20 flex items-center justify-center shrink-0">
-        <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+      <div>
+        <p class="text-sm font-medium text-slate-300">{{ accion.title }}</p>
+        <p class="text-xs text-slate-500 mt-0.5">{{ accion.subtitle }}</p>
       </div>
-      <span class="text-sm font-medium text-slate-300">Proyectos</span>
     </a>
-    <a routerLink="/dashboard/inventario" class="card p-4 flex items-center gap-3 hover:border-amber-600/50 hover:bg-amber-600/5 transition-all duration-200 cursor-pointer">
-      <div class="w-9 h-9 rounded-xl bg-amber-600/20 flex items-center justify-center shrink-0">
-        <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
-      </div>
-      <span class="text-sm font-medium text-slate-300">Inventario</span>
-    </a>
-    <a routerLink="/dashboard/estadisticas" class="card p-4 flex items-center gap-3 hover:border-cyan-600/50 hover:bg-cyan-600/5 transition-all duration-200 cursor-pointer">
-      <div class="w-9 h-9 rounded-xl bg-cyan-600/20 flex items-center justify-center shrink-0">
-        <svg class="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-      </div>
-      <span class="text-sm font-medium text-slate-300">Estadísticas</span>
-    </a>
+    }
   </div>
 
 </div>
